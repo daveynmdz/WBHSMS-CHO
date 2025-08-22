@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verify OTP</title>
+    <link rel="stylesheet" href="css/verifyOTP.css" />
+    <!-- Optional: strong CSP (adjust 'self' and endpoints as needed)
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"> -->
+</head>
+
+<body>
+
+    <header>
+        <div class="logo-container">
+            <img class="logo" src="https://ik.imagekit.io/wbhsmslogo/Nav_LogoClosed.png?updatedAt=1751197276128"
+                alt="CHO Koronadal Logo" />
+        </div>
+    </header>
+    <section class="otp-section">
+        <div class="otp-box">
+            <h2 class="otp-title">Verify Your Email</h2>
+            <div class="otp-instructions">
+                Please enter the One-Time Password (OTP) sent to your email address to complete your registration.
+            </div>
+            <form class="otp-form" id="otpForm" autocomplete="off" novalidate>
+                <input type="text" maxlength="6" class="otp-input" id="otp" name="otp" placeholder="Enter OTP" required
+                    inputmode="numeric" pattern="\d{6}" autocomplete="one-time-code" />
+                <div id="errorMsg" class="error" role="alert" aria-live="polite" style="display:none"></div>
+                <button id="submitBtn" type="submit" class="btn">Verify OTP <i
+                        class="fa-solid fa-arrow-right"></i></button>
+            </form>
+            <button class="resend-link" id="resendBtn" type="button">Resend OTP</button>
+        </div>
+    </section>
+
+    <script>
+        (function () {
+            const form = document.getElementById('otpForm');
+            const input = document.getElementById('otp');
+            const errorMsg = document.getElementById('errorMsg');
+            const submitBtn = document.getElementById('submitBtn');
+            // const csrf = document.getElementById('csrf')?.value || '';
+
+            input.focus();
+
+            function showError(msg) {
+                errorMsg.textContent = msg;
+                errorMsg.style.display = 'block';
+            }
+            function clearError() {
+                errorMsg.textContent = '';
+                errorMsg.style.display = 'none';
+            }
+            function setSubmitting(isSubmitting) {
+                submitBtn.disabled = isSubmitting;
+                submitBtn.dataset.originalText ??= submitBtn.textContent;
+                submitBtn.textContent = isSubmitting ? 'Verifying…' : submitBtn.dataset.originalText;
+            }
+
+            // Sanitize pasted content (digits only)
+            input.addEventListener('input', () => {
+                const v = input.value.replace(/\D+/g, '').slice(0, 6);
+                if (v !== input.value) input.value = v;
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                clearError();
+
+                const otp = (input.value || '').trim();
+                if (!/^\d{6}$/.test(otp)) {
+                    showError('Please enter the 6-digit code.');
+                    input.focus();
+                    return;
+                }
+
+                const body = new URLSearchParams();
+                body.set('otp', otp);
+                // if (csrf) body.set('csrf', csrf);
+
+                setSubmitting(true);
+
+                // Optional: Abort if server doesn’t respond in time
+                const ac = new AbortController();
+                const t = setTimeout(() => ac.abort(), 15000);
+
+                try {
+                    const res = await fetch('verifyOTP.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                            'Accept': 'application/json'
+                            // 'X-CSRF-Token': csrf || ''
+                        },
+                        body: body.toString(),
+                        signal: ac.signal,
+                        credentials: 'same-origin'
+                    });
+
+                    clearTimeout(t);
+
+                    let data = null;
+                    // Try parsing JSON even on some error codes
+                    try { data = await res.json(); } catch (_) { /* non-JSON */ }
+
+                    if (!res.ok) {
+                        switch (res.status) {
+                            case 401:
+                                showError(data?.message || 'Invalid OTP. Please try again.');
+                                break;
+                            case 405:
+                                showError('Method not allowed. Please refresh the page and try again.');
+                                break;
+                            case 409:
+                                showError(data?.message || 'This email is already registered.');
+                                break;
+                            case 429:
+                                showError(data?.message || 'Too many attempts. Please request a new code.');
+                                break;
+                            case 440: // login/session timeout (non-standard, but used by your PHP)
+                                showError(data?.message || 'Session expired. Please register again.');
+                                break;
+                            default:
+                                showError(data?.message || 'Verification failed. Please try again.');
+                        }
+                        setSubmitting(false);
+                        return;
+                    }
+
+                    // Success path
+                    if (data?.success && data?.username) {
+                        // Defensive encoding on redirect params
+                        const u = encodeURIComponent(data.username);
+                        window.location.href = 'verifyOTPsuccess.html?username=' + u;
+                        return;
+                    }
+
+                    // Unexpected but ok response
+                    showError(data?.message || 'Could not verify the code. Please try again.');
+                    setSubmitting(false);
+
+                } catch (err) {
+                    const aborted = err && (err.name === 'AbortError');
+                    showError(aborted
+                        ? 'Request timed out. Please check your connection and try again.'
+                        : 'Network error. Please try again.');
+                    setSubmitting(false);
+                }
+            });
+
+            // Resend OTP button logic with 30s cooldown
+            const resendBtn = document.getElementById('resendBtn');
+            let resendCooldown = 30;
+            let resendTimer = null;
+
+            function setResendDisabled(disabled) {
+                resendBtn.disabled = disabled;
+                resendBtn.style.opacity = disabled ? 0.6 : 1;
+                resendBtn.style.pointerEvents = disabled ? 'none' : 'auto';
+            }
+
+            function startResendCountdown() {
+                setResendDisabled(true);
+                let seconds = resendCooldown;
+                resendBtn.textContent = `Resend OTP (${seconds})`;
+                resendTimer = setInterval(() => {
+                    seconds--;
+                    resendBtn.textContent = `Resend OTP (${seconds})`;
+                    if (seconds <= 0) {
+                        clearInterval(resendTimer);
+                        resendBtn.textContent = 'Resend OTP';
+                        setResendDisabled(false);
+                    }
+                }, 1000);
+            }
+
+            resendBtn.addEventListener('click', function () {
+                // Refresh the page to trigger OTP resend (server-side logic should resend OTP on page load)
+                startResendCountdown();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500); // short delay to show button feedback
+            });
+
+            // Start cooldown on page load
+            startResendCountdown();
+
+            // Optional: Autofill via WebOTP API (Chrome on Android + HTTPS + same origin)
+            if ('OTPCredential' in window && window.PublicKeyCredential) {
+                try {
+                    navigator.credentials.get({
+                        otp: { transport: ['sms'] },
+                        signal: new AbortController().signal
+                    }).then(cred => {
+                        if (cred && cred.code) {
+                            input.value = (cred.code || '').replace(/\D+/g, '').slice(0, 6);
+                            form.requestSubmit();
+                        }
+                    }).catch(() => {/* ignore */ });
+                } catch (_) {/* ignore */ }
+            }
+        })();
+    </script>
+</body>
+
+</html>

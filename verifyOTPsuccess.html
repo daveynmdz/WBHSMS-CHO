@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verified</title>
+    <link rel="stylesheet" href="css/verifyOTP.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img class="logo" src="https://ik.imagekit.io/wbhsmslogo/Nav_LogoClosed.png?updatedAt=1751197276128" alt="CHO Koronadal Logo" />
+        </div>
+    </header>
+    <section class="otp-section">
+        <div class="otp-box">
+            <h2 class="otp-title" style="color:#28a745;">Registration Successful!</h2>
+            <div class="username" id="usernameDisplay" style="font-size:1.2rem;font-weight:bold;color:var(--brand);margin-bottom:1.5rem;"></div>
+            <div class="otp-instructions">You can now log in using your username and password.<br>Redirecting to login page in <span id="countdown">10</span> seconds...</div>
+            <a href="patientLogin.html" id="loginLink" class="btn" style="margin-top:18px;">Go to Login Now</a>
+        </div>
+    </section>
+    <script>
+    // Get username from URL
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+    const username = getQueryParam('username');
+    if (username) {
+        document.getElementById('usernameDisplay').textContent = 'Your Username: ' + username;
+    }
+    // Countdown and redirect
+    let seconds = 10;
+    const countdownEl = document.getElementById('countdown');
+    const interval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        if (seconds <= 0) {
+            clearInterval(interval);
+            window.location.href = 'patientLogin.html';
+        }
+    }, 1000);
+    document.getElementById('loginLink').addEventListener('click', function(e) {
+        window.location.href = 'patientLogin.html';
+    });
+    </script>
+</body>
+</html>
