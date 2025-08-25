@@ -1,42 +1,114 @@
 <?php
-// Example: Fetch patient data from a database or API here.
-// For demo, we'll use static variables. Replace with your backend logic.
+session_start();
+require_once 'db.php';
+
+// Get id from session or GET parameter
+$patient_id = isset($_SESSION['patient_id']) ? $_SESSION['patient_id'] : (isset($_GET['id']) ? $_GET['id'] : null);
+if (!$patient_id) {
+    die('No patient ID provided.');
+}
+
+// Fetch patient info using PDO
+$stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
+$stmt->execute([$patient_id]);
+$patient_row = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$patient_row) {
+    die('Patient not found.');
+}
+
 $patient = [
-    "full_name" => "John Doe",
-    "patient_id" => "123456",
-    "age" => 32,
-    "sex" => "Male",
-    "dob" => "1993-05-19",
-    "blood_type" => "O+",
-    "civil_status" => "Single",
-    "religion" => "Roman Catholic",
-    "occupation" => "Software Engineer",
-    "contact" => "+63 900 123 4567",
-    "email" => "john.doe@email.com",
-    "philhealth_id" => "PH123456789",
-    "address" => "123 Main St",
-    "barangay" => "Barangay Uno",
+    // Compose full name from first, middle, last, and suffix
+    "full_name" => trim($patient_row['first_name'] . ' ' . ($patient_row['middle_name'] ?? '') . ' ' . $patient_row['last_name'] . ' ' . ($patient_row['suffix'] ?? '')),
+    "patient_id" => $patient_row['id'],
+    "username" => $patient_row['username'] ?? '',
+    // Age calculation from dob
+    "age" => $patient_row['dob'] ? (date('Y') - date('Y', strtotime($patient_row['dob']))) : '',
+    "sex" => $patient_row['sex'],
+    "dob" => $patient_row['dob'],
+    "blood_type" => $patient_row['blood_type'] ?? '',
+    "civil_status" => $patient_row['civil_status'] ?? '',
+    "religion" => $patient_row['religion'] ?? '',
+    "occupation" => $patient_row['occupation'] ?? '',
+    "contact" => $patient_row['contact_num'],
+    "email" => $patient_row['email'],
+    "philhealth_id" => $patient_row['philhealth_id'] ?? '',
+    "address" => $patient_row['address'] ?? '',
+    "barangay" => $patient_row['barangay'],
+    // Emergency contact (if you have these columns, otherwise leave blank)
     "emergency" => [
-        "name" => "Jane Doe",
-        "relationship" => "Sister",
-        "contact" => "+63 900 765 4321"
+        "name" => $patient_row['emergency_name'] ?? '',
+        "relationship" => $patient_row['emergency_relationship'] ?? '',
+        "contact" => $patient_row['emergency_contact'] ?? ''
     ],
+    // Lifestyle (if you have these columns, otherwise leave blank)
     "lifestyle" => [
-        "smoking" => "Never",
-        "alcohol" => "Occasional",
-        "activity" => "Active",
-        "diet" => "Balanced"
+        "smoking" => $patient_row['smoking'] ?? '',
+        "alcohol" => $patient_row['alcohol'] ?? '',
+        "activity" => $patient_row['activity'] ?? '',
+        "diet" => $patient_row['diet'] ?? ''
     ],
+    // Vitals (if you have these columns, otherwise leave blank)
     "vitals" => [
-        "height" => "172 cm",
-        "weight" => "68 kg",
-        "bp" => "120/80 mmHg",
-        "cardiac_rate" => "72 bpm",
-        "temperature" => "36.8 °C",
-        "respiratory_rate" => "16/min"
-    ],
-    // Add arrays for appointments and medical history as needed
+        "height" => $patient_row['height'] ?? '',
+        "weight" => $patient_row['weight'] ?? '',
+        "bp" => $patient_row['bp'] ?? '',
+        "cardiac_rate" => $patient_row['cardiac_rate'] ?? '',
+        "temperature" => $patient_row['temperature'] ?? '',
+        "respiratory_rate" => $patient_row['respiratory_rate'] ?? ''
+    ]
 ];
+
+// Fetch medical history using PDO from separate tables
+$medical_history = [
+    'past_conditions' => [],
+    'chronic_illnesses' => [],
+    'family_history' => [],
+    'surgical_history' => [],
+    'allergies' => [],
+    'current_medications' => []
+];
+
+// Past Medical Conditions
+$stmt = $pdo->prepare("SELECT `condition`, year_diagnosed, status FROM past_medical_conditions WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $medical_history['past_conditions'][] = $row;
+}
+
+// Chronic Illnesses
+$stmt = $pdo->prepare("SELECT illness, year_diagnosed, management FROM chronic_illnesses WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $medical_history['chronic_illnesses'][] = $row;
+}
+
+// Family History
+$stmt = $pdo->prepare("SELECT family_member, `condition`, age_diagnosed, current_status FROM family_history WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $medical_history['family_history'][] = $row;
+}
+
+// Surgical History
+$stmt = $pdo->prepare("SELECT surgery, year, hospital FROM surgical_history WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $medical_history['surgical_history'][] = $row;
+}
+
+// Current Medications
+$stmt = $pdo->prepare("SELECT medication, dosage, frequency, prescribed_by FROM current_medications WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $medical_history['current_medications'][] = $row;
+}
+
+// Allergies
+$stmt = $pdo->prepare("SELECT allergen, reaction, severity FROM allergies WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $medical_history['allergies'][] = $row;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -46,14 +118,14 @@ $patient = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Sidebar/Nav/Main styles -->
-    <link rel="stylesheet" href="assets/css/patientUI.css">
+    <link rel="stylesheet" href="css/patientUI.css">
     <!-- Profile-specific styles -->
-    <link rel="stylesheet" href="assets/css/patientProfile.css">
+    <link rel="stylesheet" href="css/patientProfile.css">
 </head>
 <body>
     <!-- Mobile top bar -->
     <div class="mobile-topbar">
-        <a href="patientUIHomepage.php">
+        <a href="patientHomepage.php">
             <img id="topbarLogo" class="logo"
                 src="https://ik.imagekit.io/wbhsmslogo/Nav_Logo.png?updatedAt=1750422462527" alt="City Health Logo" />
         </a>
@@ -63,7 +135,7 @@ $patient = [
     </button>
     <div class="overlay" id="overlay" onclick="closeNav()"></div>
     <nav class="nav" id="sidebar">
-        <a href="patientUIHomepage.php">
+        <a href="patientHomepage.php">
             <img class="logo" src="https://ik.imagekit.io/wbhsmslogo/Nav_Logo.png?updatedAt=1750422462527"
                 alt="Sidebar Logo" />
         </a>
@@ -79,7 +151,7 @@ $patient = [
                     <img src="https://i.pravatar.cc/100?img=3" alt="User Profile" />
                     <div class="user-text">
                         <strong><?= htmlspecialchars($patient['full_name']) ?></strong>
-                        <small>Patient #<?= htmlspecialchars($patient['patient_id']) ?></small>
+                        <small>Patient No.: <?= htmlspecialchars($patient['username']) ?></small>
                     </div>
                     <span class="tooltip">View Profile</span>
                 </div>
@@ -97,13 +169,23 @@ $patient = [
             <!-- LEFT SIDE -->
             <div class="profile-wrapper">
                 <!-- Top Header Card -->
-                <div class="profile-header">
-                    <img class="profile-photo" src="https://i.ibb.co/Y0m9XGk/user-icon.png" alt="User">
-                    <div class="profile-name">
-                        <h2><?= htmlspecialchars($patient['full_name']) ?></h2>
-                        <p>Patient #<?= htmlspecialchars($patient['patient_id']) ?></p>
-                    </div>
-                </div>
+<div class="profile-header">
+    <img class="profile-photo" src="https://i.ibb.co/Y0m9XGk/user-icon.png" alt="User">
+    <div class="profile-info">
+        <div class="profile-name-number">
+            <h2><?= htmlspecialchars($patient['full_name']) ?></h2>
+            <p>Patient Number: <?= htmlspecialchars($patient['username']) ?></p>
+        </div>
+        <a href="patientEditProfile.php" class="btn edit-btn">
+            <!-- Pencil SVG icon (inline) -->
+            <svg xmlns="http://www.w3.org/2000/svg" style="height:1em;width:1em;margin-right:0.5em;vertical-align:middle;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5h2m-1-1v2m10.54 1.46a2.12 2.12 0 00-3 0l-9 9a2 2 0 00-.51 1.07l-1 5a1 1 0 001.21 1.21l5-1a2 2 0 001.07-.51l9-9a2.12 2.12 0 000-3z" />
+            </svg>
+            Edit
+        </a>
+    </div>
+</div>
                 <!-- Personal Information -->
                 <div class="profile-card">
                     <h3>Personal Information</h3>

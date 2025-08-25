@@ -101,8 +101,8 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CHO Koronadal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/patientUI.css">
-    <link rel="stylesheet" href="assets/css/patientHomepage.css">
+    <link rel="stylesheet" href="css/patientUI.css">
+    <link rel="stylesheet" href="css/patientHomepage.css">
 </head>
 <body>
     <div class="mobile-topbar">
@@ -125,12 +125,12 @@ try {
             <a href="#" onclick="closeNav()"><i class="fas fa-file-invoice-dollar icon"></i> Billing</a>
         </div>
         <div class="user-profile">
-            <a href="patientUIProfile.html" style="text-decoration: none; color: inherit;">
+            <a href="patientProfile.php" style="text-decoration: none; color: inherit;">
                 <div class="user-info">
                     <img src="https://i.pravatar.cc/100?img=3" alt="User Profile" />
                     <div class="user-text">
-                        <strong><?php echo htmlspecialchars($defaults['name']); ?></strong>
-                        <small>Patient #<?php echo htmlspecialchars($defaults['patient_number']); ?></small>
+                        <strong><?= htmlspecialchars($defaults['name']) ?></strong>
+                        <small>Patient No.: <?= htmlspecialchars($defaults['patient_number']) ?></small>
                     </div>
                     <span class="tooltip">View Profile</span>
                 </div>

@@ -310,3 +310,59 @@ html {
         gap: 0.5rem;
     }
 }
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+    gap: 1.5rem;
+}
+
+/* Container for name/number + edit btn */
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* Stack name and patient number vertically */
+.profile-name-number {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.profile-name-number h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.profile-name-number p {
+    margin: 0;
+    color: #666;
+    font-size: 1rem;
+}
+
+/* Edit button with icon */
+.edit-btn {
+    background: var(--brand, #007bff);
+    color: #fff;
+    padding: 0.4rem 1rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.edit-btn:hover {
+    background: #0056b3;
+}

@@ -2,25 +2,21 @@
 session_start();
 require_once 'db.php';
 
+$error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $patient_number = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
-    $error = '';
 
     if (empty($patient_number) || empty($password)) {
         $error = 'Please enter both Patient Number and Password.';
     } else {
-    $stmt = $pdo->prepare('SELECT id, password FROM patients WHERE username = ?');
-    $stmt->execute([$patient_number]);
+        $stmt = $pdo->prepare('SELECT id, password FROM patients WHERE username = ?');
+        $stmt->execute([$patient_number]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
-            if (password_verify($password, $row['password'])) {
-                $_SESSION['patient_id'] = $row['id'];
-                header('Location: patientHomepage.php');
-                exit();
-            } else {
-                $error = 'Invalid Patient Number or Password.';
-            }
+        if ($row && password_verify($password, $row['password'])) {
+            $_SESSION['patient_id'] = $row['id'];
+            header('Location: patientHomepage.php');
+            exit();
         } else {
             $error = 'Invalid Patient Number or Password.';
         }
