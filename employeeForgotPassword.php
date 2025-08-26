@@ -28,22 +28,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Forgot Password</title>
-    <link rel="stylesheet" href="css/employeeLogin.css">
+    <link rel="stylesheet" href="css/employeeForgotPassword.css">
 </head>
 <body>
-    <div class="login-container">
-        <h2>Forgot Password</h2>
-        <?php if (!empty($msg)): ?>
-            <div style="color: green; text-align:center; margin-bottom: 10px;"> <?= htmlspecialchars($msg) ?> </div>
-        <?php endif; ?>
-        <form action="employeeForgotPassword.php" method="POST">
-            <label for="employee_number">Employee Number</label>
-            <input type="text" id="employee_number" name="employee_number" required>
-            <button type="submit">Send Reset Link</button>
-        </form>
-        <div style="text-align:center; margin-top:10px;">
-            <a href="employeeLogin.php">Back to Login</a>
+    <header>
+        <div class="logo-container">
+            <img class="logo" src="https://ik.imagekit.io/wbhsmslogo/Nav_LogoClosed.png?updatedAt=1751197276128" alt="City Health Office Koronadal logo" width="100" height="100" decoding="async" />
         </div>
-    </div>
+    </header>
+    <main class="homepage">
+        <section class="forgot-box">
+            <h2>Forgot Password</h2>
+            <?php if (!empty($msg)): ?>
+                <div class="success"> <?= htmlspecialchars($msg) ?> </div>
+            <?php endif; ?>
+            <form action="employeeForgotPassword.php" method="POST">
+                <label for="employee_number">Employee Number</label>
+                <input type="text" id="employee_number" name="employee_number" required>
+                <button type="submit">Send Reset Link</button>
+            </form>
+            <div class="forgot-footer">
+                <a href="employeeLogin.php">Back to Login</a>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

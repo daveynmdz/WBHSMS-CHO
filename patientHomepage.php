@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['patient_id'])) {
-    header('Location: patientLogin.html');
+    header('Location: patientLogin.php');
     exit();
 }
 
@@ -138,10 +138,22 @@ try {
             <div class="user-actions">
                 <a href="patientUINotifications.html" onclick="closeNav()"><i class="fas fa-bell"></i> Notifications</a>
                 <a href="#" onclick="closeNav()"><i class="fas fa-cog"></i> Settings</a>
-                <a href="logout.php" onclick="closeNav()"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+                <a href="#" onclick="showLogoutModal(event)"><i class="fas fa-sign-out-alt"></i> Log Out</a>
             </div>
         </div>
     </nav>
+    <!-- Custom Logout Modal -->
+    <div id="logoutModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h2>Sign Out</h2>
+            <p>Are you sure you want to sign out?</p>
+            <div class="modal-actions">
+                <button onclick="confirmLogout()" class="btn btn-danger">Sign Out</button>
+                <button onclick="closeLogoutModal()" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <section class="homepage">
         <h1>Welcome to the <strong>CITY HEALTH OFFICE OF KORONADAL's</strong> Official Website, <?php echo htmlspecialchars($defaults['name']); ?>!</h1>
         <div class="card-container">
@@ -282,7 +294,79 @@ try {
             menuIcon.classList.remove('fa-times');
             menuIcon.classList.add('fa-bars');
         }
+        // Custom Logout Modal logic
+        function showLogoutModal(e) {
+            e.preventDefault();
+            closeNav();
+            document.getElementById('logoutModal').style.display = 'flex';
+        }
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+        function confirmLogout() {
+            // AJAX call to patientLogout.php, then redirect to patientLogin.php
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'patientLogout.php', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    window.location.href = 'patientLogin.php';
+                }
+            };
+            xhr.send();
+        }
     </script>
+    <style>
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    .modal-content {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+        padding: 2rem 2.5rem;
+        text-align: center;
+        min-width: 300px;
+        max-width: 90vw;
+    }
+    .modal-content h2 {
+        margin-top: 0;
+        color: #d9534f;
+    }
+    .modal-actions {
+        margin-top: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+    .btn {
+        padding: 0.5rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-danger {
+        background: #d9534f;
+        color: #fff;
+    }
+    .btn-danger:hover {
+        background: #c9302c;
+    }
+    .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+    }
+    .btn-secondary:hover {
+        background: #e0e0e0;
+    }
+    </style>
     <noscript>
         <p style="text-align:center; color:red;">This site requires JavaScript to function properly. Please enable it in your browser.</p>
     </noscript>

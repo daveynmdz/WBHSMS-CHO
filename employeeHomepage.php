@@ -1,42 +1,65 @@
 <?php
 session_start();
-// Redirect to login if not logged in
-if (!isset($_SESSION['employee_id'])) {
-    header('Location: employeeLogin.php');
-    exit();
-}
 require_once 'db.php';
 
-// Fetch employee info
-$employee_id = $_SESSION['employee_id'];
-$stmt = $conn->prepare("SELECT * FROM employees WHERE id = ? LIMIT 1");
-$stmt->bind_param("i", $employee_id);
-$stmt->execute();
-$employee = $stmt->get_result()->fetch_assoc();
-$stmt->close();
+if (!isset($_SESSION['employee_id'])) {
+    die('Session employee_id missing. Please log in again.');
+}
+$employee_id = isset($_SESSION['employee_id']) ? (int) trim($_SESSION['employee_id']) : null;
+// Debug: log the processed employee_id value
+error_log('Processed employee_id: ' . $employee_id);
 
-// Example: You may want to fetch notifications, activity log, etc. For now, use placeholders.
-$defaults = [
-    'name' => $employee['name'] ?? 'Employee',
-    'employee_number' => $employee['employee_number'] ?? '',
-    'latest_appointment' => [
-        'date' => '2025-08-26',
-        'complaint' => 'N/A',
-        'diagnosis' => 'N/A',
-        'treatment' => 'N/A',
-        'height' => 'N/A',
-        'weight' => 'N/A',
-        'bp' => 'N/A',
-        'cardiac_rate' => 'N/A',
-        'temperature' => 'N/A',
-        'resp_rate' => 'N/A',
-    ],
-    'notifications' => [],
-    'activity_log' => [],
-];
+$employee = null;
+if ($employee_id) {
+    try {
+        $pdo = new PDO('mysql:host=localhost;dbname=wbhsms_database', 'root', '');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $stmt = $pdo->prepare('SELECT * FROM employees WHERE employee_id = ? LIMIT 1');
+        $stmt->execute([$employee_id]);
+        $employee = $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        $employee = null;
+    }
+}
+
+if ($employee) {
+    $full_name = $employee['last_name'] . ', ' . $employee['first_name'];
+    if (!empty($employee['middle_name'])) {
+        $full_name .= ' ' . $employee['middle_name'];
+    }
+    $defaults = [
+        'name' => $full_name,
+        'employee_number' => $employee['employee_number'],
+        'role' => isset($employee['role']) ? $employee['role'] : '',
+        'notifications' => [],
+        'activity_log' => [],
+    ];
+} else if (isset($_SESSION['employee_last_name'], $_SESSION['employee_first_name'])) {
+    // Fallback to session if DB lookup fails but session has name info
+    $full_name = $_SESSION['employee_last_name'] . ', ' . $_SESSION['employee_first_name'];
+    if (!empty($_SESSION['employee_middle_name'])) {
+        $full_name .= ' ' . $_SESSION['employee_middle_name'];
+    }
+    $defaults = [
+        'name' => $full_name,
+        'employee_number' => isset($_SESSION['employee_number']) ? $_SESSION['employee_number'] : '',
+        'role' => isset($_SESSION['role']) ? $_SESSION['role'] : '',
+        'notifications' => [],
+        'activity_log' => [],
+    ];
+} else {
+    $defaults = [
+        'name' => 'Employee Not Found',
+        'employee_number' => '',
+        'role' => '',
+        'notifications' => [],
+        'activity_log' => [],
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -45,6 +68,7 @@ $defaults = [
     <link rel="stylesheet" href="css/patientUI.css">
     <link rel="stylesheet" href="css/patientHomepage.css">
 </head>
+
 <body>
     <div class="mobile-topbar">
         <a href="employeeHomepage.php">
@@ -62,10 +86,8 @@ $defaults = [
                 alt="Sidebar Logo" />
         </a>
         <div class="menu">
-            <a href="#" onclick="closeNav()"><i class="fas fa-calendar-check"></i> Appointments</a>
-            <a href="#" onclick="closeNav()"><i class="fas fa-prescription-bottle-alt"></i> Prescription</a>
-            <a href="#" onclick="closeNav()"><i class="fas fa-vials"></i> Laboratory</a>
-            <a href="#" onclick="closeNav()"><i class="fas fa-file-invoice-dollar icon"></i> Billing</a>
+            <a href="#" onclick="closeNav()"><i class="fa-solid fa-folder-closed"></i> Patient Records</a>
+
         </div>
         <div class="user-profile">
             <a href="#" style="text-decoration: none; color: inherit;">
@@ -75,6 +97,9 @@ $defaults = [
                         <strong>
                             <?php echo htmlspecialchars($defaults['name']); ?>
                         </strong>
+                        <small>
+                            <?php echo htmlspecialchars($defaults['role']); ?>
+                        </small>
                         <small>Employee #
                             <?php echo htmlspecialchars($defaults['employee_number']); ?>
                         </small>
@@ -85,10 +110,22 @@ $defaults = [
             <div class="user-actions">
                 <a href="#" onclick="closeNav()"><i class="fas fa-bell"></i> Notifications</a>
                 <a href="#" onclick="closeNav()"><i class="fas fa-cog"></i> Settings</a>
-                <a href="logout.php" onclick="closeNav()"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+                <a href="#" onclick="showLogoutModal(event)"><i class="fas fa-sign-out-alt"></i> Log Out</a>
             </div>
         </div>
     </nav>
+    <!-- Custom Logout Modal -->
+    <div id="logoutModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h2>Sign Out</h2>
+            <p>Are you sure you want to sign out?</p>
+            <div class="modal-actions">
+                <button onclick="confirmLogout()" class="btn btn-danger">Sign Out</button>
+                <button onclick="closeLogoutModal()" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <section class="homepage">
         <h1>Welcome to the <strong>CITY HEALTH OFFICE OF KORONADAL's</strong> Employee Portal,
             <?php echo htmlspecialchars($defaults['name']); ?>!
@@ -120,62 +157,7 @@ $defaults = [
         </div>
         <div class="info-layout">
             <div class="left-column">
-                <div class="card-section latest-appointment collapsible">
-                    <div class="section-header">
-                        <h3>Latest Appointment</h3>
-                        <a href="#" class="view-more-btn">
-                            <i class="fas fa-chevron-right"></i> View More
-                        </a>
-                    </div>
-                    <div class="appointment-layout">
-                        <div class="appointment-details">
-                            <div class="detail-box">
-                                <span class="label">Date:</span>
-                                <span class="value">
-                                    <?php echo htmlspecialchars($defaults['latest_appointment']['date']); ?>
-                                </span>
-                            </div>
-                            <div class="detail-box">
-                                <span class="label">Chief Complaint:</span>
-                                <span class="value">
-                                    <?php echo htmlspecialchars($defaults['latest_appointment']['complaint']); ?>
-                                </span>
-                            </div>
-                            <div class="detail-box">
-                                <span class="label">Diagnosis:</span>
-                                <span class="value">
-                                    <?php echo htmlspecialchars($defaults['latest_appointment']['diagnosis']); ?>
-                                </span>
-                            </div>
-                            <div class="detail-box">
-                                <span class="label">Treatment:</span>
-                                <span class="value">
-                                    <?php echo htmlspecialchars($defaults['latest_appointment']['treatment']); ?>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="appointment-vitals">
-                            <div class="vital-box"><i class="fas fa-ruler-vertical"></i> <strong>Height:</strong>
-                                <?php echo htmlspecialchars($defaults['latest_appointment']['height']); ?> cm
-                            </div>
-                            <div class="vital-box"><i class="fas fa-weight"></i> <strong>Weight:</strong>
-                                <?php echo htmlspecialchars($defaults['latest_appointment']['weight']); ?> kg
-                            </div>
-                            <div class="vital-box"><i class="fas fa-tachometer-alt"></i> <strong>BP:</strong>
-                                <?php echo htmlspecialchars($defaults['latest_appointment']['bp']); ?> mmHg
-                            </div>
-                            <div class="vital-box"><i class="fas fa-heartbeat"></i> <strong>Cardiac Rate:</strong>
-                                <?php echo htmlspecialchars($defaults['latest_appointment']['cardiac_rate']); ?> bpm
-                            </div>
-                            <div class="vital-box"><i class="fas fa-thermometer-half"></i> <strong>Temperature:</strong>
-                                <?php echo htmlspecialchars($defaults['latest_appointment']['temperature']); ?>°C
-                            </div>
-                            <div class="vital-box"><i class="fas fa-lungs"></i> <strong>Resp. Rate:</strong>
-                                <?php echo htmlspecialchars($defaults['latest_appointment']['resp_rate']); ?> brpm
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
             <div class="right-column">
                 <div class="card-section notification-card">
@@ -248,10 +230,94 @@ $defaults = [
             menuIcon.classList.remove('fa-times');
             menuIcon.classList.add('fa-bars');
         }
+        // Custom Logout Modal logic
+        function showLogoutModal(e) {
+            e.preventDefault();
+            closeNav();
+            document.getElementById('logoutModal').style.display = 'flex';
+        }
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+        function confirmLogout() {
+            // AJAX call to employeeLogout.php, then redirect to employeeLogin.php
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'employeeLogout.php', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    window.location.href = 'employeeLogin.php';
+                }
+            };
+            xhr.send();
+        }
     </script>
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+            padding: 2rem 2.5rem;
+            text-align: center;
+            min-width: 300px;
+            max-width: 90vw;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #d9534f;
+        }
+
+        .modal-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-danger {
+            background: #d9534f;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #c9302c;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+    </style>
     <noscript>
         <p style="text-align:center; color:red;">This site requires JavaScript to function properly. Please enable it in
             your browser.</p>
     </noscript>
 </body>
+
 </html>
