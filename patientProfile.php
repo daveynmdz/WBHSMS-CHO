@@ -16,6 +16,22 @@ if (!$patient_row) {
     die('Patient not found.');
 }
 
+
+// Fetch personal_information
+$stmt = $pdo->prepare("SELECT * FROM personal_information WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+$personal_information = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+// Fetch emergency_contact
+$stmt = $pdo->prepare("SELECT * FROM emergency_contact WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+$emergency_contact = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+// Fetch lifestyle_info
+$stmt = $pdo->prepare("SELECT * FROM lifestyle_info WHERE patient_id = ?");
+$stmt->execute([$patient_id]);
+$lifestyle_info = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
 $patient = [
     // Compose full name from first, middle, last, and suffix
     "full_name" => trim($patient_row['first_name'] . ' ' . ($patient_row['middle_name'] ?? '') . ' ' . $patient_row['last_name'] . ' ' . ($patient_row['suffix'] ?? '')),
@@ -25,27 +41,27 @@ $patient = [
     "age" => $patient_row['dob'] ? (date('Y') - date('Y', strtotime($patient_row['dob']))) : '',
     "sex" => $patient_row['sex'],
     "dob" => $patient_row['dob'],
-    "blood_type" => $patient_row['blood_type'] ?? '',
-    "civil_status" => $patient_row['civil_status'] ?? '',
-    "religion" => $patient_row['religion'] ?? '',
-    "occupation" => $patient_row['occupation'] ?? '',
+    "blood_type" => $personal_information['blood_type'] ?? '',
+    "civil_status" => $personal_information['civil_status'] ?? '',
+    "religion" => $personal_information['religion'] ?? '',
+    "occupation" => $personal_information['occupation'] ?? '',
     "contact" => $patient_row['contact_num'],
     "email" => $patient_row['email'],
-    "philhealth_id" => $patient_row['philhealth_id'] ?? '',
-    "address" => $patient_row['address'] ?? '',
+    "philhealth_id" => $personal_information['philhealth_id'] ?? '',
+    "address" => $personal_information['street'] ?? '',
     "barangay" => $patient_row['barangay'],
-    // Emergency contact (if you have these columns, otherwise leave blank)
+    // Emergency contact
     "emergency" => [
-        "name" => $patient_row['emergency_name'] ?? '',
-        "relationship" => $patient_row['emergency_relationship'] ?? '',
-        "contact" => $patient_row['emergency_contact'] ?? ''
+        "name" => trim(($emergency_contact['first_name'] ?? '') . ' ' . ($emergency_contact['middle_name'] ?? '') . ' ' . ($emergency_contact['last_name'] ?? '')),
+        "relationship" => $emergency_contact['relation'] ?? '',
+        "contact" => $emergency_contact['contact_num'] ?? ''
     ],
-    // Lifestyle (if you have these columns, otherwise leave blank)
+    // Lifestyle
     "lifestyle" => [
-        "smoking" => $patient_row['smoking'] ?? '',
-        "alcohol" => $patient_row['alcohol'] ?? '',
-        "activity" => $patient_row['activity'] ?? '',
-        "diet" => $patient_row['diet'] ?? ''
+        "smoking" => $lifestyle_info['smoking_status'] ?? '',
+        "alcohol" => $lifestyle_info['alcohol_intake'] ?? '',
+        "activity" => $lifestyle_info['physical_act'] ?? '',
+        "diet" => $lifestyle_info['diet_habit'] ?? ''
     ],
     // Vitals (if you have these columns, otherwise leave blank)
     "vitals" => [
@@ -112,16 +128,18 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <title>Patient Profile</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Sidebar/Nav/Main styles -->
     <link rel="stylesheet" href="css/patientUI.css">
     <!-- Profile-specific styles -->
     <link rel="stylesheet" href="css/patientProfile.css">
 </head>
+
 <body>
     <!-- Mobile top bar -->
     <div class="mobile-topbar">
@@ -148,7 +166,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         <div class="user-profile">
             <a href="patientProfile.php" style="text-decoration: none; color: inherit;">
                 <div class="user-info">
-                    <img src="https://i.pravatar.cc/100?img=3" alt="User Profile" />
+                    <img src="patient_profile_photo.php" alt="User Profile" onerror="this.onerror=null;this.src='https://i.ibb.co/Y0m9XGk/user-icon.png';" />
                     <div class="user-text">
                         <strong><?= htmlspecialchars($patient['full_name']) ?></strong>
                         <small>Patient No.: <?= htmlspecialchars($patient['username']) ?></small>
@@ -169,58 +187,83 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             <!-- LEFT SIDE -->
             <div class="profile-wrapper">
                 <!-- Top Header Card -->
-<div class="profile-header">
-    <img class="profile-photo" src="https://i.ibb.co/Y0m9XGk/user-icon.png" alt="User">
-    <div class="profile-info">
-        <div class="profile-name-number">
-            <h2><?= htmlspecialchars($patient['full_name']) ?></h2>
-            <p>Patient Number: <?= htmlspecialchars($patient['username']) ?></p>
-        </div>
-        <a href="patientEditProfile.php" class="btn edit-btn">
-            <!-- Pencil SVG icon (inline) -->
-            <svg xmlns="http://www.w3.org/2000/svg" style="height:1em;width:1em;margin-right:0.5em;vertical-align:middle;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M11 5h2m-1-1v2m10.54 1.46a2.12 2.12 0 00-3 0l-9 9a2 2 0 00-.51 1.07l-1 5a1 1 0 001.21 1.21l5-1a2 2 0 001.07-.51l9-9a2.12 2.12 0 000-3z" />
-            </svg>
-            Edit
-        </a>
-    </div>
-</div>
+                <div class="profile-header">
+                    <img class="profile-photo" src="patient_profile_photo.php" alt="User" onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';">
+                    <div class="profile-info">
+                        <div class="profile-name-number">
+                            <h2><?= htmlspecialchars($patient['full_name']) ?></h2>
+                            <p>Patient Number: <?= htmlspecialchars($patient['username']) ?></p>
+                        </div>
+                        <a href="patientEditProfile.php" class="btn edit-btn">
+                            <!-- Pencil SVG icon (inline) -->
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                style="height:1em;width:1em;margin-right:0.5em;vertical-align:middle;" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5h2m-1-1v2m10.54 1.46a2.12 2.12 0 00-3 0l-9 9a2 2 0 00-.51 1.07l-1 5a1 1 0 001.21 1.21l5-1a2 2 0 001.07-.51l9-9a2.12 2.12 0 000-3z" />
+                            </svg>
+                            Edit
+                        </a>
+                    </div>
+                </div>
                 <!-- Personal Information -->
                 <div class="profile-card">
                     <h3>Personal Information</h3>
                     <div class="info-section">
-                        <div class="info-row"><span>AGE:</span><span><?= htmlspecialchars($patient['age']) ?></span></div>
-                        <div class="info-row"><span>SEX:</span><span><?= htmlspecialchars($patient['sex']) ?></span></div>
-                        <div class="info-row"><span>DATE OF BIRTH:</span><span><?= htmlspecialchars($patient['dob']) ?></span></div>
-                        <div class="info-row"><span>BLOOD TYPE:</span><span><?= htmlspecialchars($patient['blood_type']) ?></span></div>
-                        <div class="info-row"><span>CIVIL STATUS:</span><span><?= htmlspecialchars($patient['civil_status']) ?></span></div>
-                        <div class="info-row"><span>RELIGION:</span><span><?= htmlspecialchars($patient['religion']) ?></span></div>
-                        <div class="info-row"><span>OCCUPATION:</span><span><?= htmlspecialchars($patient['occupation']) ?></span></div>
-                        <div class="info-row"><span>CONTACT NO.:</span><span><?= htmlspecialchars($patient['contact']) ?></span></div>
-                        <div class="info-row"><span>EMAIL:</span><span><?= htmlspecialchars($patient['email']) ?></span></div>
-                        <div class="info-row"><span>PHILHEALTH ID:</span><span><?= htmlspecialchars($patient['philhealth_id']) ?></span></div>
-                        <div class="info-row"><span>HOUSE NO. & STREET:</span><span><?= htmlspecialchars($patient['address']) ?></span></div>
-                        <div class="info-row"><span>BARANGAY:</span><span><?= htmlspecialchars($patient['barangay']) ?></span></div>
+                        <div class="info-row"><span>AGE:</span><span><?= htmlspecialchars($patient['age']) ?></span>
+                        </div>
+                        <div class="info-row"><span>SEX:</span><span><?= htmlspecialchars($patient['sex']) ?></span>
+                        </div>
+                        <div class="info-row"><span>DATE OF
+                                BIRTH:</span><span><?= htmlspecialchars($patient['dob']) ?></span></div>
+                        <div class="info-row"><span>BLOOD
+                                TYPE:</span><span><?= htmlspecialchars($patient['blood_type']) ?></span></div>
+                        <div class="info-row"><span>CIVIL
+                                STATUS:</span><span><?= htmlspecialchars($patient['civil_status']) ?></span></div>
+                        <div class="info-row">
+                            <span>RELIGION:</span><span><?= htmlspecialchars($patient['religion']) ?></span></div>
+                        <div class="info-row">
+                            <span>OCCUPATION:</span><span><?= htmlspecialchars($patient['occupation']) ?></span></div>
+                        <div class="info-row"><span>CONTACT
+                                NO.:</span><span><?= htmlspecialchars($patient['contact']) ?></span></div>
+                        <div class="info-row"><span>EMAIL:</span><span><?= htmlspecialchars($patient['email']) ?></span>
+                        </div>
+                        <div class="info-row"><span>PHILHEALTH
+                                ID:</span><span><?= htmlspecialchars($patient['philhealth_id']) ?></span></div>
+                        <div class="info-row"><span>HOUSE NO. &
+                                STREET:</span><span><?= htmlspecialchars($patient['address']) ?></span></div>
+                        <div class="info-row">
+                            <span>BARANGAY:</span><span><?= htmlspecialchars($patient['barangay']) ?></span></div>
                     </div>
                 </div>
                 <!-- Emergency Contact -->
                 <div class="profile-card">
                     <h3>Emergency Contact</h3>
                     <div class="info-section">
-                        <div class="info-row"><span>NAME:</span><span><?= htmlspecialchars($patient['emergency']['name']) ?></span></div>
-                        <div class="info-row"><span>RELATIONSHIP:</span><span><?= htmlspecialchars($patient['emergency']['relationship']) ?></span></div>
-                        <div class="info-row"><span>CONTACT NO.:</span><span><?= htmlspecialchars($patient['emergency']['contact']) ?></span></div>
+                        <div class="info-row">
+                            <span>NAME:</span><span><?= htmlspecialchars($patient['emergency']['name']) ?></span></div>
+                        <div class="info-row">
+                            <span>RELATIONSHIP:</span><span><?= htmlspecialchars($patient['emergency']['relationship']) ?></span>
+                        </div>
+                        <div class="info-row"><span>CONTACT
+                                NO.:</span><span><?= htmlspecialchars($patient['emergency']['contact']) ?></span></div>
                     </div>
                 </div>
                 <!-- Lifestyle Information -->
                 <div class="profile-card">
                     <h3>Lifestyle Information</h3>
                     <div class="info-section">
-                        <div class="info-row"><span>SMOKING STATUS:</span><span><?= htmlspecialchars($patient['lifestyle']['smoking']) ?></span></div>
-                        <div class="info-row"><span>ALCOHOL INTAKE:</span><span><?= htmlspecialchars($patient['lifestyle']['alcohol']) ?></span></div>
-                        <div class="info-row"><span>PHYSICAL ACTIVITY:</span><span><?= htmlspecialchars($patient['lifestyle']['activity']) ?></span></div>
-                        <div class="info-row"><span>DIETARY HABIT:</span><span><?= htmlspecialchars($patient['lifestyle']['diet']) ?></span></div>
+                        <div class="info-row"><span>SMOKING
+                                STATUS:</span><span><?= htmlspecialchars($patient['lifestyle']['smoking']) ?></span>
+                        </div>
+                        <div class="info-row"><span>ALCOHOL
+                                INTAKE:</span><span><?= htmlspecialchars($patient['lifestyle']['alcohol']) ?></span>
+                        </div>
+                        <div class="info-row"><span>PHYSICAL
+                                ACTIVITY:</span><span><?= htmlspecialchars($patient['lifestyle']['activity']) ?></span>
+                        </div>
+                        <div class="info-row"><span>DIETARY
+                                HABIT:</span><span><?= htmlspecialchars($patient['lifestyle']['diet']) ?></span></div>
                     </div>
                 </div>
             </div>
@@ -235,27 +278,39 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     <div class="vitals-grid">
                         <div class="vital-card">
                             <i class="fas fa-ruler-vertical"></i>
-                            <div><span class="label">HEIGHT</span><br><strong><?= htmlspecialchars($patient['vitals']['height']) ?></strong></div>
+                            <div><span
+                                    class="label">HEIGHT</span><br><strong><?= htmlspecialchars($patient['vitals']['height']) ?></strong>
+                            </div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-weight"></i>
-                            <div><span class="label">WEIGHT</span><br><strong><?= htmlspecialchars($patient['vitals']['weight']) ?></strong></div>
+                            <div><span
+                                    class="label">WEIGHT</span><br><strong><?= htmlspecialchars($patient['vitals']['weight']) ?></strong>
+                            </div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-tachometer-alt"></i>
-                            <div><span class="label">BLOOD PRESSURE</span><br><strong><?= htmlspecialchars($patient['vitals']['bp']) ?></strong></div>
+                            <div><span class="label">BLOOD
+                                    PRESSURE</span><br><strong><?= htmlspecialchars($patient['vitals']['bp']) ?></strong>
+                            </div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-heartbeat"></i>
-                            <div><span class="label">CARDIAC RATE</span><br><strong><?= htmlspecialchars($patient['vitals']['cardiac_rate']) ?></strong></div>
+                            <div><span class="label">CARDIAC
+                                    RATE</span><br><strong><?= htmlspecialchars($patient['vitals']['cardiac_rate']) ?></strong>
+                            </div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-thermometer-half"></i>
-                            <div><span class="label">TEMPERATURE</span><br><strong><?= htmlspecialchars($patient['vitals']['temperature']) ?></strong></div>
+                            <div><span
+                                    class="label">TEMPERATURE</span><br><strong><?= htmlspecialchars($patient['vitals']['temperature']) ?></strong>
+                            </div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-lungs"></i>
-                            <div><span class="label">RESPIRATORY RATE</span><br><strong><?= htmlspecialchars($patient['vitals']['respiratory_rate']) ?></strong></div>
+                            <div><span class="label">RESPIRATORY
+                                    RATE</span><br><strong><?= htmlspecialchars($patient['vitals']['respiratory_rate']) ?></strong>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -300,7 +355,15 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 </div>
                 <!-- Medical History Example -->
                 <div class="summary-card medical-history-section">
-                    <h2>Medical History</h2>
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                        <h2 style="margin: 0;">Medical History</h2>
+                        <a href="patientEditMedHistory.php" class="btn edit-btn" style="margin-bottom: 1em; display: flex; align-items: center; gap: 0.3em;">
+                            <svg xmlns="http://www.w3.org/2000/svg" style="height:1em;width:1em;vertical-align:middle;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m-1-1v2m10.54 1.46a2.12 2.12 0 00-3 0l-9 9a2 2 0 00-.51 1.07l-1 5a1 1 0 001.21 1.21l5-1a2 2 0 001.07-.51l9-9a2.12 2.12 0 000-3z" />
+                            </svg>
+                            Edit
+                        </a>
+                    </div>
                     <div class="medical-grid">
                         <div class="medical-card">
                             <h4>Past Medical Conditions</h4>
@@ -313,7 +376,11 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Asthma</td><td>2005</td><td>Controlled</td></tr>
+                                    <tr>
+                                        <td>Asthma</td>
+                                        <td>2005</td>
+                                        <td>Controlled</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -328,7 +395,11 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Hypertension</td><td>2022</td><td>Medication</td></tr>
+                                    <tr>
+                                        <td>Hypertension</td>
+                                        <td>2022</td>
+                                        <td>Medication</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -344,7 +415,12 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Father</td><td>Diabetes</td><td>49</td><td>Managed</td></tr>
+                                    <tr>
+                                        <td>Father</td>
+                                        <td>Diabetes</td>
+                                        <td>49</td>
+                                        <td>Managed</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -359,7 +435,11 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Appendectomy</td><td>2010</td><td>City Hospital</td></tr>
+                                    <tr>
+                                        <td>Appendectomy</td>
+                                        <td>2010</td>
+                                        <td>City Hospital</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -374,7 +454,11 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Penicillin</td><td>Rash</td><td>Mild</td></tr>
+                                    <tr>
+                                        <td>Penicillin</td>
+                                        <td>Rash</td>
+                                        <td>Mild</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -390,7 +474,12 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Lisinopril</td><td>10mg</td><td>Once daily</td><td>Dr. Smith</td></tr>
+                                    <tr>
+                                        <td>Lisinopril</td>
+                                        <td>10mg</td>
+                                        <td>Once daily</td>
+                                        <td>Dr. Smith</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -422,4 +511,5 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         }
     </script>
 </body>
+
 </html>

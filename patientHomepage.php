@@ -33,10 +33,11 @@ $stmt = $pdo->prepare('SELECT last_name, first_name, middle_name, suffix, userna
 $stmt->execute([$patient_id]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($row) {
-    $full_name = $row['last_name'] . ', ' . $row['first_name'];
+    $full_name = $row['first_name'];
     if (!empty($row['middle_name'])) $full_name .= ' ' . $row['middle_name'];
+    $full_name .= ' ' . $row['last_name'];
     if (!empty($row['suffix'])) $full_name .= ' ' . $row['suffix'];
-    $defaults['name'] = $full_name;
+    $defaults['name'] = trim($full_name);
     $defaults['patient_number'] = $row['username'];
 }
 
@@ -127,7 +128,7 @@ try {
         <div class="user-profile">
             <a href="patientProfile.php" style="text-decoration: none; color: inherit;">
                 <div class="user-info">
-                    <img src="https://i.pravatar.cc/100?img=3" alt="User Profile" />
+                    <img class="profile-photo" src="patient_profile_photo.php" alt="User" onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';">
                     <div class="user-text">
                         <strong><?= htmlspecialchars($defaults['name']) ?></strong>
                         <small>Patient No.: <?= htmlspecialchars($defaults['patient_number']) ?></small>

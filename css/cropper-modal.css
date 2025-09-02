@@ -1,0 +1,32 @@
+/* Cropper modal styles */
+.cropper-modal-bg {
+  position: fixed;
+  z-index: 9999;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cropper-modal-content {
+  background: #fff;
+  padding: 1.5em;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cropper-modal-content img {
+  max-width: 60vw;
+  max-height: 60vh;
+  display: block;
+  margin-bottom: 1em;
+}
+.cropper-modal-actions {
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+}
