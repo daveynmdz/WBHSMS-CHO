@@ -81,7 +81,8 @@ $medical_history = [
     'family_history' => [],
     'surgical_history' => [],
     'allergies' => [],
-    'current_medications' => []
+    'current_medications' => [],
+    'immunizations' => []
 ];
 
 // Past Medical Conditions
@@ -125,6 +126,22 @@ $stmt->execute([$patient_id]);
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $medical_history['allergies'][] = $row;
 }
+
+// Immunizations
+$stmt = $pdo->prepare('SELECT vaccine, year_received, doses_completed, status FROM immunizations WHERE patient_id = ?');
+$stmt->execute([$patient_id]);
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $medical_history['immunizations'][] = $row;
+}
+
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    header('Location: patientLogin.php');
+    exit();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -138,6 +155,36 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     <link rel="stylesheet" href="css/patientUI.css">
     <!-- Profile-specific styles -->
     <link rel="stylesheet" href="css/patientProfile.css">
+    <style>
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.35);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-modal.active {
+            display: flex !important;
+        }
+
+        .custom-modal .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+            padding: 2em 2.5em;
+            max-width: 600px;
+            width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+    </style>
 </head>
 
 <body>
@@ -166,7 +213,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         <div class="user-profile">
             <a href="patientProfile.php" style="text-decoration: none; color: inherit;">
                 <div class="user-info">
-                    <img src="patient_profile_photo.php" alt="User Profile" onerror="this.onerror=null;this.src='https://i.ibb.co/Y0m9XGk/user-icon.png';" />
+                    <img src="patient_profile_photo.php" alt="User Profile"
+                        onerror="this.onerror=null;this.src='https://i.ibb.co/Y0m9XGk/user-icon.png';" />
                     <div class="user-text">
                         <strong><?= htmlspecialchars($patient['full_name']) ?></strong>
                         <small>Patient No.: <?= htmlspecialchars($patient['username']) ?></small>
@@ -177,10 +225,29 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             <div class="user-actions">
                 <a href="#"><i class="fas fa-bell"></i> Notifications</a>
                 <a href="#"><i class="fas fa-cog"></i> Settings</a>
-                <a href="#"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+            <!-- Logout Confirmation Modal -->
+            <div id="logoutModal"
+                style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+                <div
+                    style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.18);padding:2em 2.5em;max-width:350px;text-align:center;animation:modalFadeIn 0.2s;">
+                    <h3 style="margin-top:0;color:#c0392b;">Log Out?</h3>
+                    <p>Are you sure you want to log out?</p>
+                    <div style="display:flex;gap:1em;justify-content:center;">
+                        <button id="logoutConfirm"
+                            style="background:#c0392b;color:#fff;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Yes,
+                            Log Out</button>
+                        <button id="logoutCancel"
+                            style="background:#eaeaea;color:#333;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Cancel</button>
+                    </div>
+                </div>
             </div>
         </div>
+        </div>
     </nav>
+
+    <!-- Main Content -->
     <section class="homepage">
         <h1>PATIENT PROFILE</h1>
         <div class="profile-layout">
@@ -188,12 +255,20 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             <div class="profile-wrapper">
                 <!-- Top Header Card -->
                 <div class="profile-header">
-                    <img class="profile-photo" src="patient_profile_photo.php" alt="User" onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';">
+                    <img class="profile-photo" src="patient_profile_photo.php" alt="User"
+                        onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';">
                     <div class="profile-info">
                         <div class="profile-name-number">
                             <h2><?= htmlspecialchars($patient['full_name']) ?></h2>
                             <p>Patient Number: <?= htmlspecialchars($patient['username']) ?></p>
                         </div>
+
+                    </div>
+                </div>
+                <!-- Personal Information -->
+                <div class="profile-card">
+                    <div class="section-header">
+                        <h3>Personal Information</h3>
                         <a href="patientEditProfile.php" class="btn edit-btn">
                             <!-- Pencil SVG icon (inline) -->
                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -205,10 +280,6 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                             Edit
                         </a>
                     </div>
-                </div>
-                <!-- Personal Information -->
-                <div class="profile-card">
-                    <h3>Personal Information</h3>
                     <div class="info-section">
                         <div class="info-row"><span>AGE:</span><span><?= htmlspecialchars($patient['age']) ?></span>
                         </div>
@@ -221,9 +292,11 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         <div class="info-row"><span>CIVIL
                                 STATUS:</span><span><?= htmlspecialchars($patient['civil_status']) ?></span></div>
                         <div class="info-row">
-                            <span>RELIGION:</span><span><?= htmlspecialchars($patient['religion']) ?></span></div>
+                            <span>RELIGION:</span><span><?= htmlspecialchars($patient['religion']) ?></span>
+                        </div>
                         <div class="info-row">
-                            <span>OCCUPATION:</span><span><?= htmlspecialchars($patient['occupation']) ?></span></div>
+                            <span>OCCUPATION:</span><span><?= htmlspecialchars($patient['occupation']) ?></span>
+                        </div>
                         <div class="info-row"><span>CONTACT
                                 NO.:</span><span><?= htmlspecialchars($patient['contact']) ?></span></div>
                         <div class="info-row"><span>EMAIL:</span><span><?= htmlspecialchars($patient['email']) ?></span>
@@ -233,7 +306,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         <div class="info-row"><span>HOUSE NO. &
                                 STREET:</span><span><?= htmlspecialchars($patient['address']) ?></span></div>
                         <div class="info-row">
-                            <span>BARANGAY:</span><span><?= htmlspecialchars($patient['barangay']) ?></span></div>
+                            <span>BARANGAY:</span><span><?= htmlspecialchars($patient['barangay']) ?></span>
+                        </div>
                     </div>
                 </div>
                 <!-- Emergency Contact -->
@@ -241,7 +315,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     <h3>Emergency Contact</h3>
                     <div class="info-section">
                         <div class="info-row">
-                            <span>NAME:</span><span><?= htmlspecialchars($patient['emergency']['name']) ?></span></div>
+                            <span>NAME:</span><span><?= htmlspecialchars($patient['emergency']['name']) ?></span>
+                        </div>
                         <div class="info-row">
                             <span>RELATIONSHIP:</span><span><?= htmlspecialchars($patient['emergency']['relationship']) ?></span>
                         </div>
@@ -353,20 +428,29 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         </table>
                     </div>
                 </div>
-                <!-- Medical History Example -->
+                <!-- Medical History Section -->
                 <div class="summary-card medical-history-section">
+                    <!-- Medical History Header -->
                     <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-                        <h2 style="margin: 0;">Medical History</h2>
-                        <a href="patientEditMedHistory.php" class="btn edit-btn" style="margin-bottom: 1em; display: flex; align-items: center; gap: 0.3em;">
-                            <svg xmlns="http://www.w3.org/2000/svg" style="height:1em;width:1em;vertical-align:middle;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m-1-1v2m10.54 1.46a2.12 2.12 0 00-3 0l-9 9a2 2 0 00-.51 1.07l-1 5a1 1 0 001.21 1.21l5-1a2 2 0 001.07-.51l9-9a2.12 2.12 0 000-3z" />
+                        <h2>Medical History</h2>
+                        <a href="patientEditMedHistory.php" class="btn edit-btn">
+                            <!-- Pencil SVG icon (inline) -->
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                style="height:1em;width:1em;margin-right:0.5em;vertical-align:middle;" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5h2m-1-1v2m10.54 1.46a2.12 2.12 0 00-3 0l-9 9a2 2 0 00-.51 1.07l-1 5a1 1 0 001.21 1.21l5-1a2 2 0 001.07-.51l9-9a2.12 2.12 0 000-3z" />
                             </svg>
                             Edit
                         </a>
                     </div>
+                    <!-- Medical History Grid -->
                     <div class="medical-grid">
+                        <!-- Past Medical Conditions-->
                         <div class="medical-card">
-                            <h4>Past Medical Conditions</h4>
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <h4>Past Medical Conditions</h4>
+                            </div>
                             <table>
                                 <thead>
                                     <tr>
@@ -376,16 +460,27 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Asthma</td>
-                                        <td>2005</td>
-                                        <td>Controlled</td>
-                                    </tr>
+                                    <?php if (!empty($medical_history['past_conditions'])): ?>
+                                        <?php foreach (array_slice($medical_history['past_conditions'], 0, 2) as $condition): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($condition['condition']) ?></td>
+                                                <td><?= htmlspecialchars($condition['year_diagnosed']) ?></td>
+                                                <td><?= htmlspecialchars($condition['status']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="3" style="text-align:center;color:#888;">No records found.</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Chronic Illnesses -->
                         <div class="medical-card">
-                            <h4>Chronic Illnesses</h4>
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <h4>Chronic Illnesses</h4>
+                            </div>
                             <table>
                                 <thead>
                                     <tr>
@@ -395,16 +490,77 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Hypertension</td>
-                                        <td>2022</td>
-                                        <td>Medication</td>
-                                    </tr>
+                                    <?php if (!empty($medical_history['chronic_illnesses'])): ?>
+                                        <?php foreach (array_slice($medical_history['chronic_illnesses'], 0, 2) as $illness): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($illness['illness']) ?></td>
+                                                <td><?= htmlspecialchars($illness['year_diagnosed']) ?></td>
+                                                <td><?= htmlspecialchars($illness['management']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="3" style="text-align:center;color:#888;">No records found.</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
+                            <!-- Modal for Chronic Illnesses -->
+                            <div id="ciModal" class="custom-modal"
+                                style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+                                <div class="modal-content"
+                                    style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.18);padding:2em 2.5em;max-width:600px;width:95vw;max-height:90vh;overflow-y:auto;position:relative;">
+                                    <button onclick="closeModal('ciModal')"
+                                        style="position:absolute;top:1em;right:1em;background:none;border:none;font-size:1.5em;color:#c0392b;cursor:pointer;">&times;</button>
+                                    <h3 style="margin-top:0;color:#333;">Chronic Illnesses</h3>
+                                    <table style="width:100%;margin-bottom:1em;">
+                                        <thead>
+                                            <tr style="background:#f5f5f5;">
+                                                <th style="padding:0.5em;">Illness</th>
+                                                <th style="padding:0.5em;">Year Diagnosed</th>
+                                                <th style="padding:0.5em;">Management</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (!empty($medical_history['chronic_illnesses'])): ?>
+                                                <?php foreach ($medical_history['chronic_illnesses'] as $illness): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($illness['illness']) ?></td>
+                                                        <td><?= htmlspecialchars($illness['year_diagnosed']) ?></td>
+                                                        <td><?= htmlspecialchars($illness['management']) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="3" style="text-align:center;color:#888;">No records found.
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                    <form method="post" action="add_chronic_illness.php" style="margin-top:1em;">
+                                        <h4 style="margin-bottom:0.5em;">Add New Illness</h4>
+                                        <div style="display:flex;gap:0.5em;flex-wrap:wrap;">
+                                            <input type="text" name="illness" placeholder="Illness" required
+                                                style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="number" name="year_diagnosed" placeholder="Year" min="1900"
+                                                max="<?= date('Y') ?>" required
+                                                style="width:100px;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="text" name="management" placeholder="Management" required
+                                                style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="hidden" name="patient_id" value="<?= $patient_id ?>">
+                                            <button type="submit"
+                                                style="background:#27ae60;color:#fff;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Add</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
+                        <!-- Family History -->
                         <div class="medical-card">
-                            <h4>Family History</h4>
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <h4>Family History</h4>
+                            </div>
                             <table>
                                 <thead>
                                     <tr>
@@ -415,17 +571,83 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Father</td>
-                                        <td>Diabetes</td>
-                                        <td>49</td>
-                                        <td>Managed</td>
-                                    </tr>
+                                    <?php if (!empty($medical_history['family_history'])): ?>
+                                        <?php foreach (array_slice($medical_history['family_history'], 0, 2) as $fh): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($fh['family_member']) ?></td>
+                                                <td><?= htmlspecialchars($fh['condition']) ?></td>
+                                                <td><?= htmlspecialchars($fh['age_diagnosed']) ?></td>
+                                                <td><?= htmlspecialchars($fh['current_status']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" style="text-align:center;color:#888;">No records found.</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
+                            <!-- Modal for Family History -->
+                            <div id="fhModal" class="custom-modal"
+                                style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+                                <div class="modal-content"
+                                    style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.18);padding:2em 2.5em;max-width:600px;width:95vw;max-height:90vh;overflow-y:auto;position:relative;">
+                                    <button onclick="closeModal('fhModal')"
+                                        style="position:absolute;top:1em;right:1em;background:none;border:none;font-size:1.5em;color:#c0392b;cursor:pointer;">&times;</button>
+                                    <h3 style="margin-top:0;color:#333;">Family History</h3>
+                                    <table style="width:100%;margin-bottom:1em;">
+                                        <thead>
+                                            <tr style="background:#f5f5f5;">
+                                                <th style="padding:0.5em;">Family Member</th>
+                                                <th style="padding:0.5em;">Condition</th>
+                                                <th style="padding:0.5em;">Age Diagnosed</th>
+                                                <th style="padding:0.5em;">Current Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (!empty($medical_history['family_history'])): ?>
+                                                <?php foreach ($medical_history['family_history'] as $fh): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($fh['family_member']) ?></td>
+                                                        <td><?= htmlspecialchars($fh['condition']) ?></td>
+                                                        <td><?= htmlspecialchars($fh['age_diagnosed']) ?></td>
+                                                        <td><?= htmlspecialchars($fh['current_status']) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="4" style="text-align:center;color:#888;">No records found.
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                    <form method="post" action="add_family_history.php" style="margin-top:1em;">
+                                        <h4 style="margin-bottom:0.5em;">Add New Family History</h4>
+                                        <div style="display:flex;gap:0.5em;flex-wrap:wrap;">
+                                            <input type="text" name="family_member" placeholder="Family Member" required
+                                                style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="text" name="condition" placeholder="Condition" required
+                                                style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="number" name="age_diagnosed" placeholder="Age Diagnosed"
+                                                min="0" max="120" required
+                                                style="width:100px;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="text" name="current_status" placeholder="Current Status"
+                                                required
+                                                style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="hidden" name="patient_id" value="<?= $patient_id ?>">
+                                            <button type="submit"
+                                                style="background:#27ae60;color:#fff;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Add</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
+                        <!-- Surgical History -->
                         <div class="medical-card">
-                            <h4>Surgical History</h4>
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <h4>Surgical History</h4>
+                            </div>
                             <table>
                                 <thead>
                                     <tr>
@@ -435,16 +657,77 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Appendectomy</td>
-                                        <td>2010</td>
-                                        <td>City Hospital</td>
-                                    </tr>
+                                    <?php if (!empty($medical_history['surgical_history'])): ?>
+                                        <?php foreach (array_slice($medical_history['surgical_history'], 0, 2) as $surgery): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($surgery['surgery']) ?></td>
+                                                <td><?= htmlspecialchars($surgery['year']) ?></td>
+                                                <td><?= htmlspecialchars($surgery['hospital']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="3" style="text-align:center;color:#888;">No records found.</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
+                            <!-- Modal for Surgical History -->
+                            <div id="shModal" class="custom-modal"
+                                style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+                                <div class="modal-content"
+                                    style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.18);padding:2em 2.5em;max-width:600px;width:95vw;max-height:90vh;overflow-y:auto;position:relative;">
+                                    <button onclick="closeModal('shModal')"
+                                        style="position:absolute;top:1em;right:1em;background:none;border:none;font-size:1.5em;color:#c0392b;cursor:pointer;">&times;</button>
+                                    <h3 style="margin-top:0;color:#333;">Surgical History</h3>
+                                    <table style="width:100%;margin-bottom:1em;">
+                                        <thead>
+                                            <tr style="background:#f5f5f5;">
+                                                <th style="padding:0.5em;">Surgery</th>
+                                                <th style="padding:0.5em;">Year</th>
+                                                <th style="padding:0.5em;">Hospital</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (!empty($medical_history['surgical_history'])): ?>
+                                                <?php foreach ($medical_history['surgical_history'] as $surgery): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($surgery['surgery']) ?></td>
+                                                        <td><?= htmlspecialchars($surgery['year']) ?></td>
+                                                        <td><?= htmlspecialchars($surgery['hospital']) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="3" style="text-align:center;color:#888;">No records found.
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                    <form method="post" action="add_surgical_history.php" style="margin-top:1em;">
+                                        <h4 style="margin-bottom:0.5em;">Add New Surgery</h4>
+                                        <div style="display:flex;gap:0.5em;flex-wrap:wrap;">
+                                            <input type="text" name="surgery" placeholder="Surgery" required
+                                                style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="number" name="year" placeholder="Year" min="1900"
+                                                max="<?= date('Y') ?>" required
+                                                style="width:100px;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="text" name="hospital" placeholder="Hospital" required
+                                                style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="hidden" name="patient_id" value="<?= $patient_id ?>">
+                                            <button type="submit"
+                                                style="background:#27ae60;color:#fff;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Add</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
+                        <!-- Allergies -->
                         <div class="medical-card">
-                            <h4>Allergies</h4>
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <h4>Allergies</h4>
+                            </div>
                             <table>
                                 <thead>
                                     <tr>
@@ -454,16 +737,153 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Penicillin</td>
-                                        <td>Rash</td>
-                                        <td>Mild</td>
-                                    </tr>
+                                    <?php if (!empty($medical_history['allergies'])): ?>
+                                        <?php foreach (array_slice($medical_history['allergies'], 0, 2) as $idx => $allergy): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($allergy['allergen']) ?></td>
+                                                <td><?= htmlspecialchars($allergy['reaction']) ?></td>
+                                                <td><?= htmlspecialchars($allergy['severity']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="3" style="text-align:center;color:#888;">No records found.</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
+                            <!-- Modal for Allergies -->
+                            <div id="allergyModal" class="custom-modal"
+                                style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+                                <div class="modal-content"
+                                    style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.18);padding:2em 2.5em;max-width:600px;width:95vw;max-height:90vh;overflow-y:auto;position:relative;">
+                                    <button type="button" onclick="closeModal('allergyModal')"
+                                        style="position:absolute;top:1em;right:1em;background:none;border:none;font-size:1.5em;color:#c0392b;cursor:pointer;">&times;</button>
+                                    <h3 style="margin-top:0;color:#333;">Allergies</h3>
+                                    <table style="width:100%;margin-bottom:1em;">
+                                        <thead>
+                                            <tr style="background:#f5f5f5;">
+                                                <th style="padding:0.5em;">Allergen</th>
+                                                <th style="padding:0.5em;">Reaction</th>
+                                                <th style="padding:0.5em;">Severity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php if (!empty($medical_history['allergies'])): ?>
+                                                <?php foreach ($medical_history['allergies'] as $allergy): ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($allergy['allergen']) ?></td>
+                                                        <td><?= htmlspecialchars($allergy['reaction']) ?></td>
+                                                        <td><?= htmlspecialchars($allergy['severity']) ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="3" style="text-align:center;color:#888;">No records found.
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                    <form method="post" action="add_allergy.php" style="margin-top:1em;">
+                                        <h4 style="margin-bottom:0.5em;">Add New Allergy</h4>
+                                        <div style="display:flex;gap:0.5em;flex-wrap:wrap;align-items:flex-start;">
+                                            <!-- Allergen Dropdown -->
+                                            <div style="flex:1;min-width:150px;">
+                                                <select name="allergen_dropdown" id="allergenSelect" required
+                                                    onchange="toggleOtherInput(this, 'allergenOtherInput')"
+                                                    style="width:100%;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                                    <option value="">Select Allergen</option>
+                                                    <option value="Peanuts">Peanuts</option>
+                                                    <option value="Penicillin">Penicillin</option>
+                                                    <option value="Pollen">Pollen</option>
+                                                    <option value="Shellfish">Shellfish</option>
+                                                    <option value="Eggs">Eggs</option>
+                                                    <option value="Milk">Milk</option>
+                                                    <option value="Latex">Latex</option>
+                                                    <option value="Insect Stings">Insect Stings</option>
+                                                    <option value="Dust Mites">Dust Mites</option>
+                                                    <option value="Mold">Mold</option>
+                                                    <option value="Others">Others (specify)</option>
+                                                </select>
+                                                <input type="text" id="allergenOtherInput"
+                                                    placeholder="Specify Allergen"
+                                                    style="display:none;margin-top:0.3em;width:100%;padding:0.5em;border:1px solid #ccc;border-radius:5px;" />
+                                            </div>
+                                            <!-- Reaction Dropdown -->
+                                            <div style="flex:1;min-width:150px;">
+                                                <select name="reaction_dropdown" id="reactionSelect" required
+                                                    onchange="toggleOtherInput(this, 'reactionOtherInput')"
+                                                    style="width:100%;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                                    <option value="">Select Reaction</option>
+                                                    <option value="Rash">Rash</option>
+                                                    <option value="Anaphylaxis">Anaphylaxis</option>
+                                                    <option value="Swelling">Swelling</option>
+                                                    <option value="Hives">Hives</option>
+                                                    <option value="Itching">Itching</option>
+                                                    <option value="Shortness of Breath">Shortness of Breath</option>
+                                                    <option value="Vomiting">Vomiting</option>
+                                                    <option value="Others">Others (specify)</option>
+                                                </select>
+                                                <input type="text" id="reactionOtherInput"
+                                                    placeholder="Specify Reaction"
+                                                    style="display:none;margin-top:0.3em;width:100%;padding:0.5em;border:1px solid #ccc;border-radius:5px;" />
+                                            </div>
+                                            <!-- Severity Dropdown -->
+                                            <div style="flex:1;min-width:120px;">
+                                                <select name="severity" required
+                                                    style="width:100%;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                                    <option value="">Select Severity</option>
+                                                    <option value="Mild">Mild</option>
+                                                    <option value="Moderate">Moderate</option>
+                                                    <option value="Severe">Severe</option>
+                                                </select>
+                                            </div>
+                                            <input type="hidden" name="allergen" id="allergenFinal" />
+                                            <input type="hidden" name="reaction" id="reactionFinal" />
+                                            <input type="hidden" name="patient_id" value="<?= $patient_id ?>">
+                                            <button type="submit"
+                                                style="background:#27ae60;color:#fff;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Add</button>
+                                        </div>
+                                        <script>
+                                            function toggleOtherInput(selectElem, inputId) {
+                                                var input = document.getElementById(inputId);
+                                                if (selectElem.value === 'Others') {
+                                                    input.style.display = 'block';
+                                                    input.required = true;
+                                                } else {
+                                                    input.style.display = 'none';
+                                                    input.required = false;
+                                                }
+                                            }
+                                            // On submit, set hidden allergen and reaction fields to the correct value
+                                            var allergyForm = document.currentScript.parentElement.parentElement;
+                                            allergyForm.onsubmit = function (e) {
+                                                var allergenSel = document.getElementById('allergenSelect');
+                                                var allergenOther = document.getElementById('allergenOtherInput');
+                                                var allergenFinal = document.getElementById('allergenFinal');
+                                                allergenFinal.value = (allergenSel.value === 'Others') ? allergenOther.value : allergenSel.value;
+                                                var reactionSel = document.getElementById('reactionSelect');
+                                                var reactionOther = document.getElementById('reactionOtherInput');
+                                                var reactionFinal = document.getElementById('reactionFinal');
+                                                reactionFinal.value = (reactionSel.value === 'Others') ? reactionOther.value : reactionSel.value;
+                                                // Prevent submit if required fields are empty
+                                                if (!allergenFinal.value || !reactionFinal.value) {
+                                                    alert('Please fill out all required fields.');
+                                                    return false;
+                                                }
+                                                return true;
+                                            }
+                                        </script>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
+                        <!-- Current Medications -->
                         <div class="medical-card">
-                            <h4>Current Medications</h4>
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <h4>Current Medications</h4>
+                            </div>
                             <table>
                                 <thead>
                                     <tr>
@@ -474,12 +894,52 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <?php if (!empty($medical_history['current_medications'])): ?>
+                                        <?php foreach (array_slice($medical_history['current_medications'], 0, 2) as $med): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($med['medication']) ?></td>
+                                                <td><?= htmlspecialchars($med['dosage']) ?></td>
+                                                <td><?= htmlspecialchars($med['frequency']) ?></td>
+                                                <td><?= htmlspecialchars($med['prescribed_by']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" style="text-align:center;color:#888;">No records found.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Immunizations -->
+                        <div class="medical-card">
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <h4>Immunizations</h4>
+                            </div>
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td>Lisinopril</td>
-                                        <td>10mg</td>
-                                        <td>Once daily</td>
-                                        <td>Dr. Smith</td>
+                                        <th>Vaccine</th>
+                                        <th>Year Received</th>
+                                        <th>Doses Completed</th>
+                                        <th>Status</th>
                                     </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($medical_history['immunizations'])): ?>
+                                        <?php foreach (array_slice($medical_history['immunizations'], 0, 2) as $imm): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($imm['vaccine']) ?></td>
+                                                <td><?= htmlspecialchars($imm['year_received']) ?></td>
+                                                <td><?= htmlspecialchars($imm['doses_completed']) ?></td>
+                                                <td><?= htmlspecialchars($imm['status']) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" style="text-align:center;color:#888;">No records found.</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -489,6 +949,35 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         </div>
     </section>
     <script>
+        // Logout popup logic
+        document.addEventListener('DOMContentLoaded', function () {
+            var logoutBtn = document.getElementById('logoutBtn');
+            var logoutModal = document.getElementById('logoutModal');
+            var logoutConfirm = document.getElementById('logoutConfirm');
+            var logoutCancel = document.getElementById('logoutCancel');
+            if (logoutBtn && logoutModal) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    logoutModal.style.display = 'flex';
+                });
+            }
+            if (logoutCancel) {
+                logoutCancel.addEventListener('click', function () {
+                    logoutModal.style.display = 'none';
+                });
+            }
+            if (logoutConfirm) {
+                logoutConfirm.addEventListener('click', function () {
+                    window.location.href = '?logout=1';
+                });
+            }
+            // Close modal on outside click
+            if (logoutModal) {
+                logoutModal.addEventListener('click', function (e) {
+                    if (e.target === logoutModal) logoutModal.style.display = 'none';
+                });
+            }
+        });
         function toggleNav() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
@@ -508,6 +997,12 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             const menuIcon = document.getElementById('menuIcon');
             menuIcon.classList.remove('fa-times');
             menuIcon.classList.add('fa-bars');
+        }
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
         }
     </script>
 </body>

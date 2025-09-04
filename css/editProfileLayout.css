@@ -1,61 +1,6 @@
-/* Profile Photo + Info 2-column grid */
-.edit-profile-flex.profile-photo-info-grid {
-    display: grid;
-    height: 100%;
-    grid-template-columns: 30% auto;
-    gap: 1rem;
-    align-items: flex-start;
-}
-.profile-photo-col {
-    width: 100%;
-    min-width: 0;
-}
-.profile-info-col {
-    width: 100%;
-    min-width: 0;
-}
-
-@media (max-width: 900px) {
-    .profile-photo-info-grid {
-        grid-template-columns: 1fr;
-        gap: 1.2rem;
-    }
-    .profile-photo-col, .profile-info-col {
-        width: 100%;
-    }
-}
-/* Floating Back/Cancel Button */
-.floating-back-btn {
-    position: fixed;
-    top: 110px;
-    /* Adjust to match the toolbar's vertical position */
-    left: 2vw;
-    z-index: 1000;
-    min-width: 120px;
-    box-shadow: 0 2px 8px #0002;
-    background: #fff;
-    color: #d32f2f;
-    border: 1px solid #d32f2f;
-    font-weight: 600;
-    transition: background 0.2s, color 0.2s;
-}
-
-.floating-back-btn:hover {
-    background: #ffeaea;
-    color: #b71c1c;
-}
-
-@media (max-width: 700px) {
-    .floating-back-btn {
-        top: 80px;
-        left: 1vw;
-        min-width: 90px;
-        font-size: 0.95em;
-        padding: 0.5em 0.8em;
-    }
-}
-
-/* ======= GLOBAL ======= */
+/* =============================
+   1. GLOBAL/BODY/BACKGROUND
+   ============================= */
 html,
 body {
     height: 100%;
@@ -71,7 +16,9 @@ body {
     overflow-y: auto;
 }
 
-/* ======= TOPBAR ======= */
+/* =============================
+   2. TOPBAR (Header)
+   ============================= */
 .edit-profile-topbar {
     width: 100vw;
     min-width: 0;
@@ -88,7 +35,7 @@ body {
 
 .edit-profile-topbar .topbar-logo img {
     height: 48px;
-    width: 190px;
+    width: auto;
     display: block;
 }
 
@@ -103,7 +50,7 @@ body {
 
 .edit-profile-topbar .topbar-userinfo {
     display: flex;
-    width: 190px;
+    max-width: 190px;
     align-items: center;
     justify-content: flex-end;
     gap: 0.7rem;
@@ -131,13 +78,36 @@ body {
     color: #888;
 }
 
-/* ======= TOOLBAR (CANCEL/BACK & REMINDERS) ======= */
+/* =============================
+   3. FLOATING BACK/CANCEL BUTTON
+   ============================= */
+.floating-back-btn {
+    position: fixed;
+    top: 110px;
+    left: 2vw;
+    z-index: 1000;
+    min-width: 120px;
+    box-shadow: 0 2px 8px #0002;
+    background: #fff;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s;
+}
+
+.floating-back-btn:hover {
+    background: #ffeaea;
+    color: #b71c1c;
+}
+
+/* =============================
+   4. TOOLBAR (Reminders, Cancel)
+   ============================= */
 .edit-profile-toolbar-flex {
     display: flex;
     align-items: center;
     justify-content: space-between;
     max-width: 900px;
-    /* or whatever you want */
     width: 100%;
     gap: 1.5rem;
     margin: auto;
@@ -171,7 +141,9 @@ body {
     color: #333;
 }
 
-/* ======= MAIN LAYOUT ======= */
+/* =============================
+   5. MAIN LAYOUT (Flex/Grid)
+   ============================= */
 .edit-profile-flex {
     display: flex;
     gap: 2.2rem;
@@ -195,16 +167,16 @@ body {
     box-sizing: border-box;
 }
 
-/* (Grid layouts, if needed) omitted as not present in your raw code */
-
-/* ======= PROFILE CARD ======= */
+/* =============================
+   6. PROFILE CARD
+   ============================= */
 .profile-card {
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
     padding: 2rem 2.5rem 1.5rem 2.5rem;
-    margin-bottom: 0;
     width: 100%;
+    margin-bottom: 15px;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -225,7 +197,9 @@ body {
     letter-spacing: 0.2px;
 }
 
-/* ======= FORM ROWS & FIELDS ======= */
+/* =============================
+   7. FORM ROWS & FIELDS
+   ============================= */
 .form-row {
     display: flex;
     flex-wrap: wrap;
@@ -266,7 +240,9 @@ body {
     margin-top: 1.2rem;
 }
 
-/* ======= BUTTONS, STATES ======= */
+/* =============================
+   8. BUTTONS, STATES
+   ============================= */
 .btn {
     background: linear-gradient(90deg, #1877f2, #42a5f5);
     color: #fff;
@@ -300,7 +276,9 @@ body {
     margin-bottom: 1rem;
 }
 
-/* ======= EDIT PROFILE FORM SPECIFIC ======= */
+/* =============================
+   9. EDIT PROFILE FORM SPECIFIC
+   ============================= */
 .edit-profile-form {
     width: 100%;
     margin: 2rem auto;
@@ -377,7 +355,9 @@ body {
     margin-bottom: 1rem;
 }
 
-/* ======= LIFESTYLE SECTIONS ======= */
+/* =============================
+   10. LIFESTYLE SECTIONS
+   ============================= */
 .lifestyle-info-section {
     background: #f8fafd;
     border-radius: 12px;
@@ -400,7 +380,9 @@ body {
     padding-left: 0.5em;
 }
 
-/* ======= LIFESTYLE MATRIX ======= */
+/* =============================
+   11. LIFESTYLE MATRIX
+   ============================= */
 .lifestyle-matrix {
     width: 100%;
     max-width: 100%;
@@ -507,7 +489,9 @@ body {
     outline-offset: 2px;
 }
 
-/* ======= MEDIA QUERIES ======= */
+/* =============================
+   12. MEDIA QUERIES
+   ============================= */
 @media (max-width: 1100px) {
     .edit-profile-grid {
         grid-template-columns: 1fr;
@@ -529,8 +513,6 @@ body {
 
 @media (max-width: 900px) {
     .edit-profile-topbar {
-        flex-direction: column;
-        align-items: stretch;
         gap: 0.5rem;
         padding: 0.7rem 0.5rem;
     }
@@ -546,9 +528,9 @@ body {
 
     .edit-profile-toolbar-flex {
         flex-direction: column;
-        align-items: stretch; /* or center, depending on your layout needs */
-        gap: 0.7rem;          /* smaller gap for mobile */
-        width: 100%;          /* optional: ensures full width */
+        align-items: stretch;
+        gap: 0.7rem;
+        width: 100%;
     }
 
     .edit-profile-reminders {
@@ -605,7 +587,8 @@ body {
     }
 
     .profile-card {
-        padding: 1rem 0.5rem 1rem 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
         border-radius: 10px;
     }
 
@@ -615,8 +598,6 @@ body {
     }
 
     .edit-profile-topbar {
-        flex-direction: column;
-        align-items: stretch;
         gap: 0.5rem;
         padding: 0.7rem 0.5rem;
     }
@@ -628,6 +609,14 @@ body {
 
     .edit-profile-topbar .topbar-userinfo {
         justify-content: flex-end;
+    }
+
+    .floating-back-btn {
+        top: 80px;
+        left: 1vw;
+        min-width: 90px;
+        font-size: 0.95em;
+        padding: 0.5em 0.8em;
     }
 }
 
@@ -661,4 +650,22 @@ body {
         top: 5px;
         left: 5px;
     }
+}
+
+.reminders-box {
+    background: #fffbe6;
+    border: 1px solid #ffe58f;
+    border-radius: 8px;
+    padding: 1em 1.5em;
+    margin: 0 auto 2em auto;
+    width: auto;
+    color: #856404;
+    font-size: 1.05em;
+    box-shadow: 0 2px 8px rgba(255, 229, 143, 0.08);
+}
+
+.reminders-box ul {
+    margin: 0.5em 0 0 1.2em;
+    padding: 0;
+    list-style: disc;
 }
