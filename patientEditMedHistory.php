@@ -93,6 +93,7 @@ function h($v)
     <link rel="stylesheet" href="css/patientUI.css">
     <link rel="stylesheet" href="css/patientProfile.css">
     <link rel="stylesheet" href="css/editProfileLayout.css">
+    <link rel="stylesheet" href="css/patientMedHistory.css">
     <link rel="stylesheet" href="css/patientTopbar.css">
     <style>
         html,
@@ -194,7 +195,7 @@ function h($v)
             <div class="profile-photo-col">
                 <div class="profile-card">
                     <h3 style="margin-top:0;color:#333;">Allergies</h3>
-                    <table style="width:100%;margin-bottom:1em;">
+                    <table class="medical-history-table">
                         <thead>
                             <tr style="background:#f5f5f5;">
                                 <th style="padding:0.5em;">Allergen</th>
@@ -211,9 +212,31 @@ function h($v)
                                         <td><?= h($allergy['reaction']) ?></td>
                                         <td><?= h($allergy['severity']) ?></td>
                                         <td style="text-align:center; vertical-align:middle;">
-                                            <button type="button" class="edit-btn"
-                                                style="background:#f1c40f;color:#fff;border:none;padding:0.3em 0.8em;margin:auto;border-radius:5px;cursor:pointer;font-weight:600;font-size:0.95em;"
-                                                onclick="openEditAllergyModal('editAllergyModal<?= $idx ?>', <?= htmlspecialchars(json_encode($allergy), ENT_QUOTES, 'UTF-8') ?>)">Edit</button>
+                                            <div class="action-btn-group" style="display:flex;gap:0.5em;justify-content:center;align-items:center;flex-wrap:wrap;">
+                                                <button type="button" class="action-btn edit" title="Edit" style="background:#f1c40f;color:#fff;border:none;padding:0.3em 0.8em;border-radius:5px;cursor:pointer;font-weight:600;font-size:0.95em;min-width:70px;display:flex;align-items:center;gap:0.3em;" onclick="openEditAllergyModal('editAllergyModal<?= $idx ?>', <?= htmlspecialchars(json_encode($allergy), ENT_QUOTES, 'UTF-8') ?>)"><i class='fas fa-edit icon'></i> Edit</button>
+                                                <button type="button" class="action-btn delete" title="Delete" style="background:#e74c3c;color:#fff;border:none;padding:0.3em 0.8em;border-radius:5px;cursor:pointer;font-weight:600;font-size:0.95em;min-width:70px;display:flex;align-items:center;gap:0.3em;" onclick="openCustomDeletePopup('allergies', <?= h($allergy['id']) ?>, this)"><i class="fas fa-trash icon"></i> Delete</button>
+                                            </div>
+                                            <!-- Custom Delete Popup -->
+                                            <div class="custom-delete-popup"
+                                                id="custom-delete-popup-allergies-<?= h($allergy['id']) ?>"
+                                                style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);justify-content:center;align-items:center;">
+                                                <div
+                                                    style="background:#fff;padding:2em 1.5em;border-radius:10px;box-shadow:0 2px 16px rgba(0,0,0,0.15);max-width:90vw;width:350px;text-align:center;">
+                                                    <div
+                                                        style="font-size:1.2em;font-weight:600;color:#e74c3c;margin-bottom:1em;">
+                                                        Confirm Deletion</div>
+                                                    <div style="margin-bottom:1.5em;color:#444;">Are you sure you want to delete
+                                                        this allergy record?</div>
+                                                    <div style="display:flex;gap:1em;justify-content:center;">
+                                                        <button type="button"
+                                                            style="background:#e74c3c;color:#fff;border:none;padding:0.5em 1.5em;border-radius:5px;font-weight:600;cursor:pointer;"
+                                                            onclick="proceedDelete('allergies', <?= h($allergy['id']) ?>, this)">Delete</button>
+                                                        <button type="button"
+                                                            style="background:#bbb;color:#333;border:none;padding:0.5em 1.5em;border-radius:5px;font-weight:600;cursor:pointer;"
+                                                            onclick="closeCustomDeletePopup('custom-delete-popup-allergies-<?= h($allergy['id']) ?>')">Cancel</button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                     <!-- Edit Allergy Modal -->
@@ -305,6 +328,51 @@ function h($v)
                                         </div>
                                     </div>
                                     <script>
+                                        // Custom Delete Popup Logic
+                                        function openCustomDeletePopup(table, id, btn) {
+                                            // Close any open popups first
+                                            document.querySelectorAll('.custom-delete-popup').forEach(function (popup) { popup.style.display = 'none'; });
+                                            var popupId = 'custom-delete-popup-' + table + '-' + id;
+                                            var popup = document.getElementById(popupId);
+                                            if (popup) {
+                                                popup.style.display = 'flex';
+                                            }
+                                        }
+                                        function closeCustomDeletePopup(popupId) {
+                                            var popup = document.getElementById(popupId);
+                                            if (popup) {
+                                                popup.style.display = 'none';
+                                            }
+                                        }
+                                        function proceedDelete(table, id, btn) {
+                                            // AJAX delete logic (same as confirmDelete, but with custom popup)
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.open('POST', 'delete_medical_history.php', true);
+                                            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                                            xhr.onreadystatechange = function () {
+                                                if (xhr.readyState === 4) {
+                                                    if (xhr.status === 200) {
+                                                        try {
+                                                            var res = JSON.parse(xhr.responseText);
+                                                            if (res.success) {
+                                                                // Remove the row from the table
+                                                                var row = btn.closest('tr');
+                                                                if (row) row.remove();
+                                                            } else {
+                                                                alert(res.error || 'Failed to delete record.');
+                                                            }
+                                                        } catch (e) {
+                                                            alert('Failed to delete record.');
+                                                        }
+                                                    } else {
+                                                        alert('Failed to delete record.');
+                                                    }
+                                                    // Always close the popup
+                                                    closeCustomDeletePopup('custom-delete-popup-' + table + '-' + id);
+                                                }
+                                            };
+                                            xhr.send('table=' + encodeURIComponent(table) + '&id=' + encodeURIComponent(id));
+                                        }
                                         function openEditAllergyModal(modalId, allergy) {
                                             document.getElementById(modalId).style.display = 'flex';
                                             var idx = modalId.replace('editAllergyModal', '');
@@ -448,8 +516,9 @@ function h($v)
             <!-- Past Medical Condition Table -->
             <div class="profile-photo-col">
                 <div class="profile-card">
-                    <h3 style="margin-top:0;color:#333;">Past Medical Conditions</h3>
-                    <table style="width:100%;margin-bottom:1em;">
+                    <h3 style="margin-top:0;color:#333;"><i class="fas fa-notes-medical icon"></i> Past Medical
+                        Conditions</h3>
+                    <table class="medical-history-table">
                         <thead>
                             <tr style="background:#f5f5f5;">
                                 <th style="padding:0.5em;">Condition</th>
@@ -466,9 +535,21 @@ function h($v)
                                         <td><?= h($cond['year_diagnosed']) ?></td>
                                         <td><?= h($cond['status']) ?></td>
                                         <td style="text-align:center; vertical-align:middle;">
-                                            <button type="button" class="edit-btn"
-                                                style="background:#f1c40f;color:#fff;border:none;padding:0.3em 0.8em;margin:auto;border-radius:5px;cursor:pointer;font-weight:600;font-size:0.95em;"
-                                                onclick="openEditPastCondModal('editPastCondModal<?= $idx ?>', <?= htmlspecialchars(json_encode($cond), ENT_QUOTES, 'UTF-8') ?>)">Edit</button>
+                                            <div class="action-btn-group" style="display:flex;gap:0.5em;justify-content:center;align-items:center;flex-wrap:wrap;">
+                                                <button type="button" class="action-btn edit" title="Edit" style="background:#f1c40f;color:#fff;border:none;padding:0.3em 0.8em;border-radius:5px;cursor:pointer;font-weight:600;font-size:0.95em;min-width:70px;display:flex;align-items:center;gap:0.3em;" onclick="openEditPastCondModal('editPastCondModal<?= $idx ?>', <?= htmlspecialchars(json_encode($cond), ENT_QUOTES, 'UTF-8') ?>)"><i class='fas fa-edit icon'></i> Edit</button>
+                                                <button type="button" class="action-btn delete" title="Delete" style="background:#e74c3c;color:#fff;border:none;padding:0.3em 0.8em;border-radius:5px;cursor:pointer;font-weight:600;font-size:0.95em;min-width:70px;display:flex;align-items:center;gap:0.3em;" onclick="openCustomDeletePopup('past_medical_conditions', <?= h($cond['id']) ?>, this)"><i class="fas fa-trash icon"></i> Delete</button>
+                                            </div>
+                                            <!-- Custom Delete Popup -->
+                                            <div class="custom-delete-popup" id="custom-delete-popup-past_medical_conditions-<?= h($cond['id']) ?>" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);justify-content:center;align-items:center;">
+                                                <div style="background:#fff;padding:2em 1.5em;border-radius:10px;box-shadow:0 2px 16px rgba(0,0,0,0.15);max-width:90vw;width:350px;text-align:center;">
+                                                    <div style="font-size:1.2em;font-weight:600;color:#e74c3c;margin-bottom:1em;">Confirm Deletion</div>
+                                                    <div style="margin-bottom:1.5em;color:#444;">Are you sure you want to delete this past medical condition record?</div>
+                                                    <div style="display:flex;gap:1em;justify-content:center;">
+                                                        <button type="button" style="background:#e74c3c;color:#fff;border:none;padding:0.5em 1.5em;border-radius:5px;font-weight:600;cursor:pointer;" onclick="proceedDelete('past_medical_conditions', <?= h($cond['id']) ?>, this)">Delete</button>
+                                                        <button type="button" style="background:#bbb;color:#333;border:none;padding:0.5em 1.5em;border-radius:5px;font-weight:600;cursor:pointer;" onclick="closeCustomDeletePopup('custom-delete-popup-past_medical_conditions-<?= h($cond['id']) ?>')">Cancel</button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                     <!-- Edit Past Medical Condition Modal -->
@@ -586,8 +667,8 @@ function h($v)
                             </select>
                         </label><br>
                         <input type="hidden" name="patient_id" value="<?= $patient_id ?>">
-                        <button type="submit"
-                            style="background:#27ae60;color:#fff;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Add</button>
+                        <button type="submit" class="action-btn" style="margin-top:0.5em;"><i
+                                class="fas fa-plus icon"></i> Add</button>
                     </form>
                 </div>
             </div>
@@ -615,6 +696,9 @@ function h($v)
                                             <button type="button" class="edit-btn"
                                                 style="background:#f1c40f;color:#fff;border:none;padding:0.3em 0.8em;margin:auto;border-radius:5px;cursor:pointer;font-weight:600;font-size:0.95em;"
                                                 onclick="openEditChronicIllModal('editChronicIllModal<?= $idx ?>', <?= htmlspecialchars(json_encode($ill), ENT_QUOTES, 'UTF-8') ?>)">Edit</button>
+                                            <button type="button" class="action-btn delete" title="Delete"
+                                                onclick="confirmDelete('chronic_illnesses', <?= h($ill['id']) ?>, this)"><i
+                                                    class="fas fa-trash icon"></i> Delete</button>
                                         </td>
                                     </tr>
                                     <!-- Edit Chronic Illness Modal -->
@@ -1601,6 +1685,33 @@ function h($v)
             } else {
                 otherField.style.display = "none";
                 otherField.value = "";
+            }
+        }
+    </script>
+    <script>
+        function confirmDelete(table, id, btn) {
+            if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
+                btn.disabled = true;
+                fetch('delete_medical_history.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `table=${encodeURIComponent(table)}&id=${encodeURIComponent(id)}`
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove row from table
+                            const row = btn.closest('tr');
+                            if (row) row.remove();
+                        } else {
+                            alert('Delete failed: ' + (data.error || 'Unknown error'));
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(() => {
+                        alert('Delete failed due to network error.');
+                        btn.disabled = false;
+                    });
             }
         }
     </script>
