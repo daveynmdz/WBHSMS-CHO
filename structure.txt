@@ -1,0 +1,434 @@
+Folder PATH listing
+Volume serial number is 0000007F 7EEC:01AB
+C:\XAMPP\HTDOCS\WBHSMS-CHO
+|   .gitattributes
+|   structure.txt
+|   
++---assets
++---config
+|       db.php
+|       
++---includes
+|       patientsidebar.php
+|       patienttopbar.php
+|       
++---public
+|   |   index.html
+|   |   
+|   +---composer
+|   +---css
+|   |       changePassword.css
+|   |       changePasswordSuccess.css
+|   |       cropper-modal.css
+|   |       editProfileLayout.css
+|   |       employeeForgotPassword.css
+|   |       employeeLogin.css
+|   |       forgotPassword.css
+|   |       patientHomepage.css
+|   |       patientLogin.css
+|   |       patientMedHistory.css
+|   |       patientProfile.css
+|   |       patientRegistration.css
+|   |       patientTopbar.css
+|   |       patientUI.css
+|   |       verifyOTP.css
+|   |       
+|   +---employee
+|   |       createReferral.php
+|   |       employeeForgotPassword.html
+|   |       employeeForgotPassword.php
+|   |       employeeHomepage.php
+|   |       employeeLogin.php
+|   |       employeePatientMgmt.php
+|   |       employeeReferralIssue.php
+|   |       employeeViewPatientProfile.php
+|   |       verifyReferral.php
+|   |       
+|   +---images
+|   |       default-avatar.png
+|   |       
+|   +---js
+|   |   |   allergy.js
+|   |   |   profile-photo-cropper.js
+|   |   |   registration.js
+|   |   |   
+|   |   +---cropperjs-2.0.1
+|   |   |   |   .browserslistrc
+|   |   |   |   .editorconfig
+|   |   |   |   .eslintignore
+|   |   |   |   .eslintrc.js
+|   |   |   |   .gitignore
+|   |   |   |   .stylelintignore
+|   |   |   |   api-extractor.json
+|   |   |   |   CHANGELOG.md
+|   |   |   |   commitlint.config.js
+|   |   |   |   jest.config.js
+|   |   |   |   lerna.json
+|   |   |   |   LICENSE
+|   |   |   |   lint-staged.config.js
+|   |   |   |   package-lock.json
+|   |   |   |   package.json
+|   |   |   |   postcss.config.js
+|   |   |   |   README.md
+|   |   |   |   rollup.config.js
+|   |   |   |   stylelint.config.js
+|   |   |   |   tsconfig.json
+|   |   |   |   
+|   |   |   +---.github
+|   |   |   |   |   CODE_OF_CONDUCT.md
+|   |   |   |   |   CONTRIBUTING.md
+|   |   |   |   |   PULL_REQUEST_TEMPLATE.md
+|   |   |   |   |   
+|   |   |   |   +---ISSUE_TEMPLATE
+|   |   |   |   |       bug_report.yml
+|   |   |   |   |       config.yml
+|   |   |   |   |       feature_request.md
+|   |   |   |   |       
+|   |   |   |   \---workflows
+|   |   |   |           ci.yml
+|   |   |   |           deploy.yml
+|   |   |   |           
+|   |   |   +---.husky
+|   |   |   |       commit-msg
+|   |   |   |       pre-commit
+|   |   |   |       
+|   |   |   +---docs
+|   |   |   |   |   cropper-playground.md
+|   |   |   |   |   guide.md
+|   |   |   |   |   index.md
+|   |   |   |   |   migration.md
+|   |   |   |   |   playground.md
+|   |   |   |   |   
+|   |   |   |   +---.vitepress
+|   |   |   |   |   |   config.mts
+|   |   |   |   |   |   shims.d.ts
+|   |   |   |   |   |   
+|   |   |   |   |   +---components
+|   |   |   |   |   |       ColorInput.vue
+|   |   |   |   |   |       CropperActionExample.vue
+|   |   |   |   |   |       CropperCanvasToNativeCanvas.vue
+|   |   |   |   |   |       CropperExample.vue
+|   |   |   |   |   |       CropperImageExample.vue
+|   |   |   |   |   |       CropperPlayground.vue
+|   |   |   |   |   |       CropperPlaygroundContainer.vue
+|   |   |   |   |   |       CropperSelectionExample.vue
+|   |   |   |   |   |       CropperSelectionToNativeCanvas.vue
+|   |   |   |   |   |       LiveDemo.vue
+|   |   |   |   |   |       
+|   |   |   |   |   \---theme
+|   |   |   |   |           index.scss
+|   |   |   |   |           index.ts
+|   |   |   |   |           
+|   |   |   |   +---api
+|   |   |   |   |       cropper-canvas.md
+|   |   |   |   |       cropper-crosshair.md
+|   |   |   |   |       cropper-element.md
+|   |   |   |   |       cropper-grid.md
+|   |   |   |   |       cropper-handle.md
+|   |   |   |   |       cropper-image.md
+|   |   |   |   |       cropper-selection.md
+|   |   |   |   |       cropper-shade.md
+|   |   |   |   |       cropper-viewer.md
+|   |   |   |   |       index.md
+|   |   |   |   |       
+|   |   |   |   +---public
+|   |   |   |   |       apple-touch-icon.png
+|   |   |   |   |       favicon-16x16.png
+|   |   |   |   |       favicon-32x32.png
+|   |   |   |   |       favicon.ico
+|   |   |   |   |       logo.svg
+|   |   |   |   |       manifest.webmanifest
+|   |   |   |   |       picture.jpg
+|   |   |   |   |       service-worker.js
+|   |   |   |   |       
+|   |   |   |   \---zh
+|   |   |   |       |   cropper-playground.md
+|   |   |   |       |   guide.md
+|   |   |   |       |   index.md
+|   |   |   |       |   migration.md
+|   |   |   |       |   playground.md
+|   |   |   |       |   
+|   |   |   |       \---api
+|   |   |   |               cropper-canvas.md
+|   |   |   |               cropper-crosshair.md
+|   |   |   |               cropper-element.md
+|   |   |   |               cropper-grid.md
+|   |   |   |               cropper-handle.md
+|   |   |   |               cropper-image.md
+|   |   |   |               cropper-selection.md
+|   |   |   |               cropper-shade.md
+|   |   |   |               cropper-viewer.md
+|   |   |   |               index.md
+|   |   |   |               
+|   |   |   +---packages
+|   |   |   |   +---cropperjs
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       template.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element-canvas
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element-crosshair
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element-grid
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element-handle
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element-image
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element-selection
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element-shade
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---element-viewer
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   +---src
+|   |   |   |   |   |       index.ts
+|   |   |   |   |   |       style.ts
+|   |   |   |   |   |       
+|   |   |   |   |   \---tests
+|   |   |   |   |           index.spec.ts
+|   |   |   |   |           
+|   |   |   |   +---elements
+|   |   |   |   |   |   api-extractor.json
+|   |   |   |   |   |   package.json
+|   |   |   |   |   |   README.md
+|   |   |   |   |   |   
+|   |   |   |   |   \---src
+|   |   |   |   |           index.ts
+|   |   |   |   |           
+|   |   |   |   \---utils
+|   |   |   |       |   api-extractor.json
+|   |   |   |       |   package.json
+|   |   |   |       |   README.md
+|   |   |   |       |   
+|   |   |   |       +---src
+|   |   |   |       |       constants.ts
+|   |   |   |       |       functions.ts
+|   |   |   |       |       index.ts
+|   |   |   |       |       
+|   |   |   |       \---tests
+|   |   |   |               index.spec.ts
+|   |   |   |               
+|   |   |   \---types
+|   |   |           index.d.ts
+|   |   |           
+|   |   \---json
+|   +---patient
+|   |   |   add_medical_history.php
+|   |   |   changePassword.html
+|   |   |   changePassword.php
+|   |   |   changePasswordSuccess.html
+|   |   |   delete_medical_history.php
+|   |   |   forgotPassword.html
+|   |   |   forgotPassword.php
+|   |   |   patientEditMedHistory.php
+|   |   |   patientEditProfile.php
+|   |   |   patientHomepage.php
+|   |   |   patientProfile.php
+|   |   |   patientRegistration.html
+|   |   |   patient_profile_photo.php
+|   |   |   profile_photo_upload.php
+|   |   |   registerPatient.php
+|   |   |   update_medical_history.php
+|   |   |   verifyOTP.html
+|   |   |   verifyOTP.php
+|   |   |   verifyOTPPassword.html
+|   |   |   verifyOTPPassword.php
+|   |   |   verifyOTPsuccess.html
+|   |   |   
+|   |   \---login
+|   |           patientLogin.php
+|   |           
+|   +---shared
+|   \---test
++---tests
+|       test.php
+|       
+\---vendor
+    |   autoload.php
+    |   
+    +---composer
+    |       autoload_classmap.php
+    |       autoload_namespaces.php
+    |       autoload_psr4.php
+    |       autoload_real.php
+    |       autoload_static.php
+    |       ClassLoader.php
+    |       installed.json
+    |       installed.php
+    |       InstalledVersions.php
+    |       LICENSE
+    |       platform_check.php
+    |       
+    \---phpmailer
+        \---phpmailer
+            |   COMMITMENT
+            |   composer.json
+            |   get_oauth_token.php
+            |   LICENSE
+            |   README.md
+            |   SECURITY.md
+            |   SMTPUTF8.md
+            |   VERSION
+            |   
+            +---language
+            |       phpmailer.lang-af.php
+            |       phpmailer.lang-ar.php
+            |       phpmailer.lang-as.php
+            |       phpmailer.lang-az.php
+            |       phpmailer.lang-ba.php
+            |       phpmailer.lang-be.php
+            |       phpmailer.lang-bg.php
+            |       phpmailer.lang-bn.php
+            |       phpmailer.lang-ca.php
+            |       phpmailer.lang-cs.php
+            |       phpmailer.lang-da.php
+            |       phpmailer.lang-de.php
+            |       phpmailer.lang-el.php
+            |       phpmailer.lang-eo.php
+            |       phpmailer.lang-es.php
+            |       phpmailer.lang-et.php
+            |       phpmailer.lang-fa.php
+            |       phpmailer.lang-fi.php
+            |       phpmailer.lang-fo.php
+            |       phpmailer.lang-fr.php
+            |       phpmailer.lang-gl.php
+            |       phpmailer.lang-he.php
+            |       phpmailer.lang-hi.php
+            |       phpmailer.lang-hr.php
+            |       phpmailer.lang-hu.php
+            |       phpmailer.lang-hy.php
+            |       phpmailer.lang-id.php
+            |       phpmailer.lang-it.php
+            |       phpmailer.lang-ja.php
+            |       phpmailer.lang-ka.php
+            |       phpmailer.lang-ko.php
+            |       phpmailer.lang-ku.php
+            |       phpmailer.lang-lt.php
+            |       phpmailer.lang-lv.php
+            |       phpmailer.lang-mg.php
+            |       phpmailer.lang-mn.php
+            |       phpmailer.lang-ms.php
+            |       phpmailer.lang-nb.php
+            |       phpmailer.lang-nl.php
+            |       phpmailer.lang-pl.php
+            |       phpmailer.lang-pt.php
+            |       phpmailer.lang-pt_br.php
+            |       phpmailer.lang-ro.php
+            |       phpmailer.lang-ru.php
+            |       phpmailer.lang-si.php
+            |       phpmailer.lang-sk.php
+            |       phpmailer.lang-sl.php
+            |       phpmailer.lang-sr.php
+            |       phpmailer.lang-sr_latn.php
+            |       phpmailer.lang-sv.php
+            |       phpmailer.lang-tl.php
+            |       phpmailer.lang-tr.php
+            |       phpmailer.lang-uk.php
+            |       phpmailer.lang-ur.php
+            |       phpmailer.lang-vi.php
+            |       phpmailer.lang-zh.php
+            |       phpmailer.lang-zh_cn.php
+            |       
+            \---src
+                    DSNConfigurator.php
+                    Exception.php
+                    OAuth.php
+                    OAuthTokenProvider.php
+                    PHPMailer.php
+                    POP3.php
+                    SMTP.php
+                    
