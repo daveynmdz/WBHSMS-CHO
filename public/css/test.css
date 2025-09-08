@@ -1,0 +1,133 @@
+
+/* --- Imported from editProfileLayout.css for patientEditMedHistory.php --- */
+.edit-profile-toolbar-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 900px;
+    width: 100%;
+    gap: 1.5rem;
+    margin: auto;
+}
+
+.btn {
+    background: linear-gradient(90deg, #1877f2, #42a5f5);
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(24, 119, 242, 0.08);
+    margin-left: 0.5rem;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.btn:disabled {
+    background: #ccc;
+}
+.btn:hover {
+    background: linear-gradient(90deg, #42a5f5, #1877f2);
+    box-shadow: 0 4px 16px rgba(24, 119, 242, 0.13);
+}
+
+.btn-cancel {
+    background: #fff;
+    color: #1877f2;
+    border: 1.5px solid #1877f2;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px #0001;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.btn-cancel:hover {
+    background: #e3eaff;
+    color: #0d47a1;
+    border-color: #0d47a1;
+}
+
+.floating-back-btn {
+    position: fixed;
+    top: 110px;
+    left: 2vw;
+    z-index: 1000;
+    min-width: 120px;
+    box-shadow: 0 2px 8px #0002;
+    background: #fff;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s;
+}
+.floating-back-btn:hover {
+    background: #ffeaea;
+    color: #b71c1c;
+}
+
+.custom-modal {
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.custom-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    padding: 2em 2.5em;
+    max-width: 350px;
+    text-align: center;
+    animation: modalFadeIn 0.2s;
+}
+@keyframes modalFadeIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+.custom-modal-actions {
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+}
+.btn-danger {
+    background: #c0392b;
+    color: #fff;
+    border: none;
+    padding: 0.5em 1.2em;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+.btn-danger:hover,
+.btn-danger:focus {
+    background: #a93226;
+}
+.btn-secondary {
+    background: #eaeaea;
+    color: #333;
+    border: none;
+    padding: 0.5em 1.2em;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background: #d5d5d5;
+}
+/* Conflict: .reminders-box and .profile-card are defined in multiple CSS files. Review and merge as needed. */
+/* --- End imported styles --- */

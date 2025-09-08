@@ -1,7 +1,7 @@
 <?php
 // update_medical_history.php
 session_start();
-require_once 'db.php';
+require_once '../../config/db.php';
 
 if (!isset($_SESSION['patient_id'])) {
     http_response_code(403);
@@ -10,7 +10,8 @@ if (!isset($_SESSION['patient_id'])) {
 $patient_id = $_SESSION['patient_id'];
 
 // Helper: sanitize input
-function get_post($key) {
+function get_post($key)
+{
     return isset($_POST[$key]) ? trim($_POST[$key]) : '';
 }
 
@@ -30,7 +31,9 @@ $allowed_tables = [
 ];
 if (!in_array($table, $allowed_tables)) {
     http_response_code(400);
-    exit('Invalid table');
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'error' => 'Invalid table']);
+    exit();
 }
 
 // Build update logic for each table
@@ -82,7 +85,7 @@ try {
             $dosage = get_post('dosage');
             $freq = get_post('frequency_dropdown') === 'Others' ? get_post('frequency_other') : get_post('frequency_dropdown');
             $prescribed = get_post('prescribed_by_dropdown') === 'Others' ? get_post('prescribed_by_other') : get_post('prescribed_by_dropdown');
-            if (!$med || !$dosage || !$freq || !$prescribed) throw new Exception('Missing fields');
+            if (!$med || !$dosage || !$freq) throw new Exception('Missing fields');
             $sql = "UPDATE current_medications SET medication=?, dosage=?, frequency=?, prescribed_by=? WHERE id=? AND patient_id=?";
             $params = [$med, $dosage, $freq, $prescribed, $id, $patient_id];
             break;
@@ -100,9 +103,18 @@ try {
     }
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    header('Location: patientEditMedHistory.php?updated=1');
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true]);
     exit();
 } catch (Exception $e) {
-    header('Location: patientEditMedHistory.php?error=' . urlencode($e->getMessage()));
+    http_response_code(400);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage(),
+        'code' => $e->getCode(),
+        'table' => $table,
+        'fields' => $_POST
+    ]);
     exit();
 }

@@ -128,7 +128,7 @@ try {
         <div class="user-profile">
             <a href="patientProfile.php" style="text-decoration: none; color: inherit;">
                 <div class="user-info">
-                    <img class="profile-photo" src="patient_profile_photo.php?patient_id=<?= urlencode($patient_id) ?>" alt="User" onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';">
+                    <img class="profile-photo" src="PhotoController.php?patient_id=<?= urlencode($patient_id) ?>" alt="User" onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';">
                     <div class="user-text">
                         <strong><?= htmlspecialchars($defaults['name']) ?></strong>
                         <small>Patient No.: <?= htmlspecialchars($defaults['patient_number']) ?></small>

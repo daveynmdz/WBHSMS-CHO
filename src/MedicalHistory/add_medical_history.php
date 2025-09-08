@@ -1,7 +1,7 @@
 <?php
 // add_medical_history.php
 session_start();
-require_once 'db.php';
+require_once '../../config/db.php';
 
 if (!isset($_SESSION['patient_id'])) {
     http_response_code(403);
@@ -9,7 +9,8 @@ if (!isset($_SESSION['patient_id'])) {
 }
 $patient_id = $_SESSION['patient_id'];
 
-function get_post($key) {
+function get_post($key)
+{
     return isset($_POST[$key]) ? trim($_POST[$key]) : '';
 }
 
@@ -96,9 +97,17 @@ try {
     }
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    header('Location: patientEditMedHistory.php?added=1');
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true]);
     exit();
 } catch (Exception $e) {
-    header('Location: patientEditMedHistory.php?error=' . urlencode($e->getMessage()));
+    http_response_code(400);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage(),
+        'table' => $table,
+        'fields' => $_POST
+    ]);
     exit();
 }

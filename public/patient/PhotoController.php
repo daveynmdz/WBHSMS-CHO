@@ -1,6 +1,6 @@
 <?php
 
-require_once 'db.php';
+require_once '../../config/db.php';
 
 // Accept patient_id from GET
 $patient_id = isset($_GET['patient_id']) ? $_GET['patient_id'] : null;

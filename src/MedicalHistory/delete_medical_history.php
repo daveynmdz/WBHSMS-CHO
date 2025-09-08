@@ -1,6 +1,6 @@
     <?php
 session_start();
-require_once 'db.php';
+require_once '../../config/db.php';
 
 // Only allow logged-in patients
 $patient_id = isset($_SESSION['patient_id']) ? $_SESSION['patient_id'] : null;

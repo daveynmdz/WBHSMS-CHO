@@ -185,6 +185,48 @@ if (isset($_GET['logout'])) {
             overflow-y: auto;
             position: relative;
         }
+
+        .profile-heading-bar {
+            flex-wrap: wrap;
+            gap: 1em;
+        }
+
+        .utility-btn-group {
+            display: flex;
+            gap: 0.7em;
+            flex-wrap: wrap;
+        }
+
+        .utility-btn {
+            font-size: 1em;
+            min-width: 44px;
+            transition: background 0.18s;
+        }
+
+        .utility-btn:hover {
+            filter: brightness(0.93);
+        }
+
+        @media (max-width: 700px) {
+            .profile-heading-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.7em;
+            }
+
+            .utility-btn-group {
+                gap: 0.5em;
+            }
+
+            .utility-btn {
+                padding: 0.5em 0.8em;
+                font-size: 0.98em;
+            }
+
+            .hide-on-mobile {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -214,8 +256,9 @@ if (isset($_GET['logout'])) {
         <div class="user-profile">
             <a href="patientProfile.php" style="text-decoration: none; color: inherit;">
                 <div class="user-info">
-                    <img src="patient_profile_photo.php?patient_id=<?= urlencode($patient['patient_id']) ?>" alt="User Profile"
-                                            onerror="this.onerror=null;this.src='https://i.ibb.co/Y0m9XGk/user-icon.png';" />
+                    <img src="PhotoController.php?patient_id=<?= urlencode($patient['patient_id']) ?>"
+                        alt="User Profile"
+                        onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';" />
                     <div class="user-text">
                         <strong><?= htmlspecialchars($patient['full_name']) ?></strong>
                         <small>Patient No.: <?= htmlspecialchars($patient['username']) ?></small>
@@ -237,7 +280,8 @@ if (isset($_GET['logout'])) {
                     <p>Are you sure you want to sign out?</p>
                     <div style="display:flex;gap:1em;justify-content:center;">
                         <button id="logoutConfirm"
-                            style="background:#c0392b;color:#fff;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Sign Out</button>
+                            style="background:#c0392b;color:#fff;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Sign
+                            Out</button>
                         <button id="logoutCancel"
                             style="background:#eaeaea;color:#333;border:none;padding:0.5em 1.2em;border-radius:5px;cursor:pointer;font-weight:600;">Cancel</button>
                     </div>
@@ -248,27 +292,32 @@ if (isset($_GET['logout'])) {
 
     <!-- Main Content -->
     <section class="homepage">
-        <div class="profile-heading-bar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1em;margin-bottom:1.5em;">
+        <div class="profile-heading-bar"
+            style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1em;margin-bottom:1.5em;">
             <h1 style="margin:0;font-size:2.2em;letter-spacing:1px;">PATIENT PROFILE</h1>
             <div class="utility-btn-group" style="display:flex;gap:0.7em;flex-wrap:wrap;">
-                <button class="utility-btn" onclick="downloadPatientFile()" title="Download Patient File" style="background:#2980b9;color:#fff;border:none;padding:0.6em 1.2em;border-radius:6px;font-weight:600;display:flex;align-items:center;gap:0.5em;box-shadow:0 2px 8px rgba(41,128,185,0.08);cursor:pointer;transition:background 0.18s;">
+                <button class="utility-btn" onclick="downloadPatientFile()" title="Download Patient File"
+                    style="background:#2980b9;color:#fff;border:none;padding:0.6em 1.2em;border-radius:6px;font-weight:600;display:flex;align-items:center;gap:0.5em;box-shadow:0 2px 8px rgba(41,128,185,0.08);cursor:pointer;transition:background 0.18s;">
                     <i class="fas fa-file-download"></i> <span class="hide-on-mobile">Download Patient File</span>
                 </button>
-                <button class="utility-btn" onclick="downloadPatientID()" title="Download Patient ID Card" style="background:#16a085;color:#fff;border:none;padding:0.6em 1.2em;border-radius:6px;font-weight:600;display:flex;align-items:center;gap:0.5em;box-shadow:0 2px 8px rgba(22,160,133,0.08);cursor:pointer;transition:background 0.18s;">
+                <button class="utility-btn" onclick="downloadPatientID()" title="Download Patient ID Card"
+                    style="background:#16a085;color:#fff;border:none;padding:0.6em 1.2em;border-radius:6px;font-weight:600;display:flex;align-items:center;gap:0.5em;box-shadow:0 2px 8px rgba(22,160,133,0.08);cursor:pointer;transition:background 0.18s;">
                     <i class="fas fa-id-card"></i> <span class="hide-on-mobile">Download ID Card</span>
                 </button>
-                <button class="utility-btn" onclick="openUserSettings()" title="User Settings" style="background:#f39c12;color:#fff;border:none;padding:0.6em 1.2em;border-radius:6px;font-weight:600;display:flex;align-items:center;gap:0.5em;box-shadow:0 2px 8px rgba(243,156,18,0.08);cursor:pointer;transition:background 0.18s;">
+                <button class="utility-btn" onclick="openUserSettings()" title="User Settings"
+                    style="background:#f39c12;color:#fff;border:none;padding:0.6em 1.2em;border-radius:6px;font-weight:600;display:flex;align-items:center;gap:0.5em;box-shadow:0 2px 8px rgba(243,156,18,0.08);cursor:pointer;transition:background 0.18s;">
                     <i class="fas fa-cog"></i> <span class="hide-on-mobile">User Settings</span>
                 </button>
             </div>
         </div>
-        <div class="profile-layout" style="max-width: none;" >
+        <div class="profile-layout" style="max-width: none;">
             <!-- LEFT SIDE -->
             <div class="profile-wrapper">
                 <!-- Top Header Card -->
                 <div class="profile-header">
-                    <img class="profile-photo" src="patient_profile_photo.php?patient_id=<?= urlencode($patient['patient_id']) ?>" alt="User"
-                                            onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';">
+                    <img class="profile-photo"
+                        src="PhotoController.php?patient_id=<?= urlencode($patient['patient_id']) ?>" alt="User"
+                        onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';">
                     <div class="profile-info">
                         <div class="profile-name-number">
                             <h2><?= htmlspecialchars($patient['full_name']) ?></h2>
@@ -281,8 +330,7 @@ if (isset($_GET['logout'])) {
                 <div class="profile-card">
                     <div class="section-header">
                         <h3>Personal Information</h3>
-                        <a href="patientEditProfile.php" class="btn edit-btn">
-                            <!-- Pencil SVG icon (inline) -->
+                        <a href="Profile/patientEditProfile.php" class="btn edit-btn">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 style="height:1em;width:1em;margin-right:0.5em;vertical-align:middle;" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
@@ -422,38 +470,10 @@ if (isset($_GET['logout'])) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <style>
-                                    .profile-heading-bar { flex-wrap: wrap; gap: 1em; }
-                                    .utility-btn-group { display: flex; gap: 0.7em; flex-wrap: wrap; }
-                                    .utility-btn { font-size: 1em; min-width: 44px; transition: background 0.18s; }
-                                    .utility-btn:hover { filter: brightness(0.93); }
-                                    @media (max-width: 700px) {
-                                        .profile-heading-bar { flex-direction: column; align-items: flex-start; gap: 0.7em; }
-                                        .utility-btn-group { gap: 0.5em; }
-                                        .utility-btn { padding: 0.5em 0.8em; font-size: 0.98em; }
-                                        .hide-on-mobile { display: none; }
-                                    }
-                                </style>
-                                <script>
-                                    function downloadPatientFile() {
-                                        // TODO: Implement file download logic
-                                        alert('Download Patient File feature coming soon.');
-                                    }
-                                    function downloadPatientID() {
-                                        // TODO: Implement ID card download logic
-                                        alert('Download Patient ID Card feature coming soon.');
-                                    }
-                                    function openUserSettings() {
-                                        // TODO: Implement user settings modal or redirect
-                                        alert('User Settings feature coming soon.');
-                                    }
-                                </script>
-                            </body>
-                            </html>
-                                    <td>09:30 AM</td>
-                                    <td>General Check-up</td>
-                                    <td>Completed</td>
-                                    <td>All good</td>
+                                <td>09:30 AM</td>
+                                <td>General Check-up</td>
+                                <td>Completed</td>
+                                <td>All good</td>
                                 </tr>
                                 <tr>
                                     <td>2025-03-14</td>
@@ -469,13 +489,14 @@ if (isset($_GET['logout'])) {
                 <!-- Medical History Section -->
                 <div class="summary-card medical-history-section">
                     <!-- Medical History Header -->
-                    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1em; flex-wrap: wrap; gap: 0.5em;">
+                    <div
+                        style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1em; flex-wrap: wrap; gap: 0.5em;">
                         <h2>Medical History</h2>
-                        <a href="patientEditMedHistory.php" class="btn edit-btn">
+                        <a href="MedicalHistory/patientEditMedHistory.php" class="btn edit-btn">
                             <!-- Pencil SVG icon (inline) -->
                             <svg xmlns="http://www.w3.org/2000/svg"
-                                style="height:1em;width:1em;margin-right:0.5em;vertical-align:middle;" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
+                                style="height:1em;width:1em;margin-right:0.5em;vertical-align:middle;" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M11 5h2m-1-1v2m10.54 1.46a2.12 2.12 0 00-3 0l-9 9a2 2 0 00-.51 1.07l-1 5a1 1 0 001.21 1.21l5-1a2 2 0 001.07-.51l9-9a2.12 2.12 0 000-3z" />
                             </svg>
@@ -667,11 +688,9 @@ if (isset($_GET['logout'])) {
                                                 style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
                                             <input type="text" name="condition" placeholder="Condition" required
                                                 style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
-                                            <input type="number" name="age_diagnosed" placeholder="Age Diagnosed"
-                                                min="0" max="120" required
-                                                style="width:100px;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
-                                            <input type="text" name="current_status" placeholder="Current Status"
-                                                required
+                                            <input type="number" name="age_diagnosed" placeholder="Age Diagnosed" min="0" max="120"
+                                                required style="width:100px;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="text" name="current_status" placeholder="Current Status" required
                                                 style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
                                             <input type="hidden" name="patient_id" value="<?= $patient_id ?>">
                                             <button type="submit"
@@ -748,9 +767,8 @@ if (isset($_GET['logout'])) {
                                         <div style="display:flex;gap:0.5em;flex-wrap:wrap;">
                                             <input type="text" name="surgery" placeholder="Surgery" required
                                                 style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
-                                            <input type="number" name="year" placeholder="Year" min="1900"
-                                                max="<?= date('Y') ?>" required
-                                                style="width:100px;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
+                                            <input type="number" name="year" placeholder="Year" min="1900" max="<?= date('Y') ?>"
+                                                required style="width:100px;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
                                             <input type="text" name="hospital" placeholder="Hospital" required
                                                 style="flex:1;padding:0.5em;border:1px solid #ccc;border-radius:5px;">
                                             <input type="hidden" name="patient_id" value="<?= $patient_id ?>">
@@ -844,8 +862,7 @@ if (isset($_GET['logout'])) {
                                                     <option value="Mold">Mold</option>
                                                     <option value="Others">Others (specify)</option>
                                                 </select>
-                                                <input type="text" id="allergenOtherInput"
-                                                    placeholder="Specify Allergen"
+                                                <input type="text" id="allergenOtherInput" placeholder="Specify Allergen"
                                                     style="display:none;margin-top:0.3em;width:100%;padding:0.5em;border:1px solid #ccc;border-radius:5px;" />
                                             </div>
                                             <!-- Reaction Dropdown -->
@@ -863,8 +880,7 @@ if (isset($_GET['logout'])) {
                                                     <option value="Vomiting">Vomiting</option>
                                                     <option value="Others">Others (specify)</option>
                                                 </select>
-                                                <input type="text" id="reactionOtherInput"
-                                                    placeholder="Specify Reaction"
+                                                <input type="text" id="reactionOtherInput" placeholder="Specify Reaction"
                                                     style="display:none;margin-top:0.3em;width:100%;padding:0.5em;border:1px solid #ccc;border-radius:5px;" />
                                             </div>
                                             <!-- Severity Dropdown -->
@@ -896,7 +912,7 @@ if (isset($_GET['logout'])) {
                                             }
                                             // On submit, set hidden allergen and reaction fields to the correct value
                                             var allergyForm = document.currentScript.parentElement.parentElement;
-                                            allergyForm.onsubmit = function (e) {
+                                            allergyForm.onsubmit = function(e) {
                                                 var allergenSel = document.getElementById('allergenSelect');
                                                 var allergenOther = document.getElementById('allergenOtherInput');
                                                 var allergenFinal = document.getElementById('allergenFinal');
@@ -987,35 +1003,50 @@ if (isset($_GET['logout'])) {
         </div>
     </section>
     <script>
+        function downloadPatientFile() {
+            // TODO: Implement file download logic
+            alert('Download Patient File feature coming soon.');
+        }
+
+        function downloadPatientID() {
+            // TODO: Implement ID card download logic
+            alert('Download Patient ID Card feature coming soon.');
+        }
+
+        function openUserSettings() {
+            // TODO: Implement user settings modal or redirect
+            alert('User Settings feature coming soon.');
+        }
         // Logout popup logic
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             var logoutBtn = document.getElementById('logoutBtn');
             var logoutModal = document.getElementById('logoutModal');
             var logoutConfirm = document.getElementById('logoutConfirm');
             var logoutCancel = document.getElementById('logoutCancel');
             if (logoutBtn && logoutModal) {
-                logoutBtn.addEventListener('click', function (e) {
+                logoutBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     logoutModal.style.display = 'flex';
                 });
             }
             if (logoutCancel) {
-                logoutCancel.addEventListener('click', function () {
+                logoutCancel.addEventListener('click', function() {
                     logoutModal.style.display = 'none';
                 });
             }
             if (logoutConfirm) {
-                logoutConfirm.addEventListener('click', function () {
+                logoutConfirm.addEventListener('click', function() {
                     window.location.href = '?logout=1';
                 });
             }
             // Close modal on outside click
             if (logoutModal) {
-                logoutModal.addEventListener('click', function (e) {
+                logoutModal.addEventListener('click', function(e) {
                     if (e.target === logoutModal) logoutModal.style.display = 'none';
                 });
             }
         });
+
         function toggleNav() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
@@ -1028,6 +1059,7 @@ if (isset($_GET['logout'])) {
             menuIcon.classList.toggle('fa-bars', !isOpen);
             menuIcon.classList.toggle('fa-times', isOpen);
         }
+
         function closeNav() {
             document.getElementById('sidebar').classList.remove('open');
             document.getElementById('overlay').classList.remove('active');
@@ -1036,9 +1068,11 @@ if (isset($_GET['logout'])) {
             menuIcon.classList.remove('fa-times');
             menuIcon.classList.add('fa-bars');
         }
+
         function openModal(id) {
             document.getElementById(id).classList.add('active');
         }
+
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
         }
