@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../../config/db.php';
 
 // Ensure patient is logged in and get patient_id
 if (!isset($_SESSION['patient_id'])) {
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
                 $stmt = $pdo->prepare("INSERT INTO personal_information (patient_id, profile_photo) VALUES (?, ?)");
                 $stmt->execute([$patient_id, $imgData]);
             }
-            header("Location: patientEditProfile.php?upload=success");
+            header("Location: Profile/patientEditProfile.php?upload=success");
             exit;
         }
     }

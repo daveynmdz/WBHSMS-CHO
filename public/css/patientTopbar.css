@@ -9,7 +9,6 @@
             padding: 0.7rem 1.2rem 0.7rem 1.2rem;
             position: sticky;
             top: 0;
-            z-index: 100;
         }
 
         /* Equal spacing for topbar children */

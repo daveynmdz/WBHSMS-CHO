@@ -64,16 +64,15 @@ $patient = [
         "activity" => $lifestyle_info['physical_act'] ?? '',
         "diet" => $lifestyle_info['diet_habit'] ?? ''
     ],
-    // Vitals (if you have these columns, otherwise leave blank)
-    "vitals" => [
-        "height" => $patient_row['height'] ?? '',
-        "weight" => $patient_row['weight'] ?? '',
-        "bp" => $patient_row['bp'] ?? '',
-        "cardiac_rate" => $patient_row['cardiac_rate'] ?? '',
-        "temperature" => $patient_row['temperature'] ?? '',
-        "respiratory_rate" => $patient_row['respiratory_rate'] ?? ''
-    ]
 ];
+
+// Fetch latest vitals for this patient
+$latest_vitals = null;
+if (!empty($patient['patient_id'])) {
+    $stmt = $pdo->prepare("SELECT * FROM vitals WHERE patient_id = ? ORDER BY recorded_at DESC LIMIT 1");
+    $stmt->execute([$patient['patient_id']]);
+    $latest_vitals = $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 // Fetch medical history using PDO from separate tables
 $medical_history = [
@@ -139,7 +138,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 if (isset($_GET['logout'])) {
     session_unset();
     session_destroy();
-    header('Location: patientLogin.php');
+    header('Location: login/patientLogin.php');
     exit();
 }
 
@@ -248,10 +247,10 @@ if (isset($_GET['logout'])) {
                 alt="Sidebar Logo" />
         </a>
         <div class="menu">
-            <a href="#"><i class="fas fa-calendar-check"></i> Appointments</a>
-            <a href="#"><i class="fas fa-prescription-bottle-alt"></i> Prescription</a>
-            <a href="#"><i class="fas fa-vials"></i> Laboratory</a>
-            <a href="#"><i class="fas fa-file-invoice-dollar icon"></i> Billing</a>
+            <a href="patientsAppointment.php"><i class="fas fa-calendar-check"></i> Appointments</a>
+            <a href="patient/patientsPrescription.php"><i class="fas fa-prescription-bottle-alt"></i> Prescription</a>
+            <a href="patient/patientsLaboratory.php"><i class="fas fa-vials"></i> Laboratory</a>
+            <a href="patient/patientsBilling.php"><i class="fas fa-file-invoice-dollar icon"></i> Billing</a>
         </div>
         <div class="user-profile">
             <a href="patientProfile.php" style="text-decoration: none; color: inherit;">
@@ -408,44 +407,40 @@ if (isset($_GET['logout'])) {
                 <div class="summary-card vitals-section">
                     <div class="section-header">
                         <h2>Latest Vitals</h2>
-                        <small><i>as of <?= date("F d, Y") ?></i></small>
+                        <small><i>
+                                <?php
+                                if ($latest_vitals && !empty($latest_vitals['recorded_at'])) {
+                                    echo "as of " . date("F d, Y h:i A", strtotime($latest_vitals['recorded_at']));
+                                } else {
+                                    echo "No vitals recorded.";
+                                }
+                                ?>
+                            </i></small>
                     </div>
                     <div class="vitals-grid">
                         <div class="vital-card">
                             <i class="fas fa-ruler-vertical"></i>
-                            <div><span
-                                    class="label">HEIGHT</span><br><strong><?= htmlspecialchars($patient['vitals']['height']) ?></strong>
-                            </div>
+                            <div><span class="label">HEIGHT</span><br><strong><?= $latest_vitals ? htmlspecialchars($latest_vitals['ht']) . ' cm' : '-' ?></strong></div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-weight"></i>
-                            <div><span
-                                    class="label">WEIGHT</span><br><strong><?= htmlspecialchars($patient['vitals']['weight']) ?></strong>
-                            </div>
+                            <div><span class="label">WEIGHT</span><br><strong><?= $latest_vitals ? htmlspecialchars($latest_vitals['wt']) . ' kg' : '-' ?></strong></div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-tachometer-alt"></i>
-                            <div><span class="label">BLOOD
-                                    PRESSURE</span><br><strong><?= htmlspecialchars($patient['vitals']['bp']) ?></strong>
-                            </div>
+                            <div><span class="label">BLOOD PRESSURE</span><br><strong><?= $latest_vitals ? htmlspecialchars($latest_vitals['bp']) : '-' ?></strong></div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-heartbeat"></i>
-                            <div><span class="label">CARDIAC
-                                    RATE</span><br><strong><?= htmlspecialchars($patient['vitals']['cardiac_rate']) ?></strong>
-                            </div>
+                            <div><span class="label">CARDIAC RATE</span><br><strong><?= $latest_vitals ? htmlspecialchars($latest_vitals['hr']) . ' bpm' : '-' ?></strong></div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-thermometer-half"></i>
-                            <div><span
-                                    class="label">TEMPERATURE</span><br><strong><?= htmlspecialchars($patient['vitals']['temperature']) ?></strong>
-                            </div>
+                            <div><span class="label">TEMPERATURE</span><br><strong><?= $latest_vitals ? htmlspecialchars($latest_vitals['temp']) . ' °C' : '-' ?></strong></div>
                         </div>
                         <div class="vital-card">
                             <i class="fas fa-lungs"></i>
-                            <div><span class="label">RESPIRATORY
-                                    RATE</span><br><strong><?= htmlspecialchars($patient['vitals']['respiratory_rate']) ?></strong>
-                            </div>
+                            <div><span class="label">RESPIRATORY RATE</span><br><strong><?= $latest_vitals ? htmlspecialchars($latest_vitals['rr']) . ' bpm' : '-' ?></strong></div>
                         </div>
                     </div>
                 </div>

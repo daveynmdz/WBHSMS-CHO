@@ -301,7 +301,7 @@ $profile_photo_url = !empty($patient['profile_photo']) ? 'images/' . $patient['p
             <div class="profile-row">
                 <div class="profile-photo-card" style="max-width: none;">
                     <form class="profile-card profile-photo-form" id="profilePhotoForm" method="post"
-                        enctype="multipart/form-data" action="profile_photo_upload.php">
+                        enctype="multipart/form-data" action="../profile_photo_upload.php">
                         <h3>Profile Photo</h3>
                         <div class="profile-photo-container">
                             <img src="../PhotoController.php?patient_id=<?= urlencode($patient_id) ?>" alt="Profile Photo"
@@ -666,7 +666,7 @@ $profile_photo_url = !empty($patient['profile_photo']) ? 'images/' . $patient['p
 
     <!-- Cropper.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
-    <script src="js/profile-photo-cropper.js"></script>
+    <script src="../../js/profile-photo-cropper.js"></script>
     <style>
         .centered-section {
             display: flex;

@@ -122,7 +122,7 @@ function h($v)
         </div>
     </header>
 
-    <section class="homepage" style="margin-left: 200px;">
+    <section class="homepage">
 
         <!-- Go Back to Patient Profile Button -->
         <div class="edit-profile-toolbar-flex">

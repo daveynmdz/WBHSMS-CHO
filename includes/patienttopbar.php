@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../config/db.php';
 // Only allow logged-in patients
-$patient_id = isset($_SESSION['patient_id']) ? $_SESSION['patient_id'] : null;
+/*$patient_id = isset($_SESSION['patient_id']) ? $_SESSION['patient_id'] : null;
 if (!$patient_id) {
-    header('Location: patientLogin.html');
+    header('Location: login/patientLogin.php');
     exit();
 }
 // Fetch patient info
@@ -13,7 +13,7 @@ $stmt->execute([$patient_id]);
 $patient = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$patient) {
     die('Patient not found.');
-}
+}*/
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -115,7 +115,6 @@ if (!$patient) {
         main.patientsidebar-main {
             min-height: 90vh;
             width: 100vw;
-            background: rgba(255, 255, 255, 0.85);
             display: flex;
             align-items: flex-start;
             justify-content: center;
@@ -171,11 +170,23 @@ if (!$patient) {
         <div class="topbar-userinfo">
             <div class="topbar-usertext">
                 <strong style="color: #ffffff;">
-                    <?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?>
+                    <?php
+                    if (isset($patient) && !empty($patient['first_name']) && !empty($patient['last_name'])) {
+                        echo htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']);
+                    } else {
+                        echo 'John Doe';
+                    }
+                    ?>
                 </strong><br>
                 <small style="color: #ffffff;">Patient</small>
             </div>
-            <img src="patient_profile_photo.php?patient_id=<?= urlencode($patient_id) ?>" alt="User Profile"
+            <img src="<?php
+                if (isset($patient_id) && !empty($patient_id)) {
+                    echo 'patient_profile_photo.php?patient_id=' . urlencode($patient_id);
+                } else {
+                    echo 'https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';
+                }
+            ?>" alt="User Profile"
                 class="topbar-userphoto"
                 onerror="this.onerror=null;this.src='https://ik.imagekit.io/wbhsmslogo/user.png?updatedAt=1750423429172';" />
         </div>
